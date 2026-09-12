@@ -1,53 +1,38 @@
-import { createBrowserRouter, RouterProvider, Navigate, Outlet } from 'react-router-dom';
-import { Login } from "./pages/auth/Login";
-import { Register } from "./pages/auth/Register";
-import { AuthProvider } from './AuthContext';
-import { Navbar } from './components/Navbar'; 
+import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider, Navigate, Outlet,  } from 'react-router-dom';
+        
+import HomePage from "./pages/HomePage";
+import LoginPage from "./pages/LoginPage";
+import RegistrationPage from "./pages/RegistrationPage";
+import MyEventsPage from "./pages/MyEventsPage";
+import CreateEventPage from "./pages/CreateEventPage";
+import DetailPage from "./pages/DetailPage";
+import NotFoundPage from "./pages/NotFoundPage";
+
+import Header from "./components/Header"
 
 const Layout = () => {
   return (
     <>
-      <Navbar />
+      <Header />
       <Outlet />
     </>
   );
 };
 
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <Layout />,
-    children: [
-      {
-        path: "/",
-        element: <Navigate to="/login" replace />
-      },
-      {
-        path: "/login",
-        element: <Login />
-      },
-      {
-        path: "/register",
-        element: <Register />
-      },
-      {
-        path: "/profile",
-        element: <div style={{ padding: "20px", color: "#fff" }}>Личный кабинет</div>  
-      },
-      {
-        path: "*",
-        element: <div style={{ padding: "20px" }}>404 — страница не найдена</div>
-      }
-    ]
-  }
-]);
+const router = createBrowserRouter(
+  createRoutesFromElements(
+    <Route path="/" element={<Layout />}>
+      <Route index element={<HomePage />} />
+      <Route path="login" element={<LoginPage />} />
+      <Route path="register" element={<RegistrationPage />} />
+      <Route path="my-events" element={<MyEventsPage />} />
+      <Route path="create-event" element={<CreateEventPage />} />
+      <Route path="events/:id" element={<DetailPage />} />
+      <Route path="*" element={<NotFoundPage />} />
+    </Route>
+  )
+)
 
-function App() {
-  return (
-    <AuthProvider>
-      <RouterProvider router={router} />
-    </AuthProvider>
-  );
+export default function App() {
+  return <RouterProvider router={router} />;
 }
-
-export default App;
