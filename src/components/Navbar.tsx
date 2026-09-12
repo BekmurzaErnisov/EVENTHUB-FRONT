@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react'; 
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 export const Navbar: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [isOpen, setIsOpen] = useState(false); 
   const navigate = useNavigate();
   const location = useLocation();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSearchSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -12,6 +14,22 @@ export const Navbar: React.FC = () => {
     console.log('search searchQuery:', searchQuery);
     navigate(`/profile?search=${searchQuery}`); 
   };
+
+  const handleIconClick = () => {
+    if (isOpen && searchQuery.trim()) {
+      if (inputRef.current) {
+        inputRef.current.form?.requestSubmit();
+      }
+    } else {
+      setIsOpen(!isOpen);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isOpen]);
 
   const isEventsActive = location.pathname === '/' || location.pathname === '/login' || location.pathname === '/register';
   const isMyEventsActive = location.pathname === '/profile';
@@ -61,24 +79,44 @@ export const Navbar: React.FC = () => {
         
         <form onSubmit={handleSearchSubmit} style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
           <input 
+            ref={inputRef}
             type="text" 
-            placeholder="" 
+            placeholder="Поиск..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onBlur={() => {
+              if (!searchQuery) setIsOpen(false);
+            }}
             style={{ 
-              padding: '8px 36px 8px 12px', 
-              borderRadius: '6px', 
-              border: 'none', 
+              border: 'none',
+              borderBottom: isOpen ? '1px solid #2563EB' : 'none',
               backgroundColor: 'transparent', 
               color: '#111827',
               fontSize: '14px',
               outline: 'none',
-              width: '40px',
-              cursor: 'pointer'
+              width: isOpen ? '180px' : '0px', 
+              padding: isOpen ? '4px 8px' : '0px',
+              opacity: isOpen ? 1 : 0,
+              transition: 'all 0.25s ease-in-out', 
+              cursor: 'text'
             }}
           />
-          <button type="submit" style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-            <svg style={{ width: '20px', height: '20px', color: '#4B5563' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+          <button 
+            type="button" 
+            onClick={handleIconClick}
+            style={{ 
+              background: 'none', 
+              border: 'none', 
+              padding: '8px', 
+              cursor: 'pointer', 
+              display: 'flex', 
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '50%'
+            }}
+          >
+            <svg style={{ width: '22px', height: '22px', color: '#1F2937' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </button>
