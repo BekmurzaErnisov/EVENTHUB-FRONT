@@ -1,0 +1,132 @@
+  .header {
+    width: 100%;
+    background-color: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 16px 40px;
+  }
+
+  .brandSection,
+  .actions,
+  .mainLinks,
+  .authLinks,
+  .searchForm {
+    display: flex;
+    align-items: center;
+  }
+
+  .brandSection {
+    gap: 32px;
+  }
+
+  .brand {
+    color: #0a2540;
+    font-size: 24px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .brandAccent {
+    color: #2563eb;
+  }
+
+  .mainLinks {
+    gap: 24px;
+  }
+
+  .navLink {
+    color: #4b5563;
+    font-size: 15px;
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  .navLink:hover,
+  .navLink.active {
+    color: #2563eb;
+  }
+
+  .actions {
+    gap: 24px;
+  }
+
+  .searchForm {
+    position: relative;
+  }
+
+  .searchInput {
+    width: 0;
+    padding: 0;
+    border: 0;
+    border-bottom: 1px solid transparent;
+    background-color: transparent;
+    color: #111827;
+    font-size: 14px;
+    opacity: 0;
+    outline: none;
+    transition: width 0.25s ease-in-out, padding 0.25s ease-in-out, opacity 0.25s ease-in-out;
+  }
+
+  .searchInputOpen {
+    width: 180px;
+    padding: 4px 8px;
+    border-bottom-color: #2563eb;
+    opacity: 1;
+  }
+
+  .searchButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #4b5563;
+    cursor: pointer;
+    border-radius: 50%;
+  }
+
+  .searchButton svg {
+    width: 22px;
+    height: 22px;
+    color: #1f2937;
+  }
+
+  .authLinks {
+    gap: 12px;
+  }
+
+  .authLink {
+    padding: 10px 20px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background-color: #ffffff;
+    color: #1f2937;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  .registerLink {
+    border-color: #2563eb;
+    background-color: #2563eb;
+    color: #ffffff;
+  }
+
+  @media (max-width: 800px) {
+    .nav {
+      flex-wrap: wrap;
+      padding: 16px 20px;
+    }
+
+    .actions {
+      width: 100%;
+      justify-content: space-between;
+    }
+  }

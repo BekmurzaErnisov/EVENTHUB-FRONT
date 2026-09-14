@@ -1,8 +1,8 @@
-import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider, Navigate, Outlet,  } from 'react-router-dom';
+import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider, Outlet } from 'react-router-dom';
         
 import HomePage from "./pages/HomePage";
-import LoginPage from "./pages/LoginPage";
-import RegistrationPage from "./pages/RegistrationPage";
+import { Login } from "./pages/LoginPage";
+import { Register } from "./pages/RegisterPage";
 import MyEventsPage from "./pages/MyEventsPage";
 import CreateEventPage from "./pages/CreateEventPage";
 import DetailPage from "./pages/DetailPage";
@@ -23,8 +23,8 @@ const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<Layout />}>
       <Route index element={<HomePage />} />
-      <Route path="login" element={<LoginPage />} />
-      <Route path="register" element={<RegistrationPage />} />
+      <Route path="login" element={<Login />} />
+      <Route path="register" element={<Register />} />
       <Route path="my-events" element={<MyEventsPage />} />
       <Route path="create-event" element={<CreateEventPage />} />
       <Route path="events/:id" element={<DetailPage />} />
