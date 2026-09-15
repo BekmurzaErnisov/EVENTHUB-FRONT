@@ -1,0 +1,78 @@
+.eventPage {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 350px;
+    gap: 32px;
+    max-width: 960px;
+    margin: 40px auto;
+    padding: 0 24px;
+}
+
+.eventDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    grid-column: 2;
+}
+
+.eventDetails > div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.detailIcon {
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+    color: #65728a;
+}
+
+.eventDetails h1 {
+    max-width: 300px;
+    width: 100%;
+    margin: 0;
+}
+
+.eventDetails p {
+    margin: 0;
+}
+
+.eventDetailsDesc {
+    display: inline-block;
+    width: fit-content;
+    padding: 4px 10px;
+    color: #1769e0;
+    background: #e7f0ff;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.eventDetails button {
+    width: 100%;
+    max-width: 350px;
+    padding: 14px;
+    background: #1677ff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+}
+
+.protectionNotice {
+    display: flex;
+    align-items: flex-start;
+    max-width: 455px;
+    width: 100%;
+}
+
+
+.addressContent {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.addressContent a {
+    text-decoration: none;
+}
