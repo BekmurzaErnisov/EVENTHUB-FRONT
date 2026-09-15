@@ -1,19 +1,32 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import styles from './LoginPage.module.css';
+import { authService } from '../services/auth.service';
 
 export const Login: React.FC = () => {
+  const navigate = useNavigate()
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (event: React.SyntheticEvent) => {
+  const handleSubmit = async (event: React.SyntheticEvent) => {
     event.preventDefault();
     setError("");
 
     if (!email || !password) {
       setError("Пожалуйста, заполните все поля");
       return;
+    }
+
+    try {
+      setLoading(true)
+      await authService.login({ email, password })
+      navigate('/')
+    } catch (err: any) {
+      setError(err.message || 'Произошла ошибка при входе')
+    } finally {
+      setLoading(false)
     }
   };
 
@@ -60,7 +73,7 @@ export const Login: React.FC = () => {
           
           {error && <p className={styles.error}>{error}</p>}
           
-          <button type="submit" className={styles.submitButton}>
+          <button type="submit" className={styles.submitButton} disabled={loading}>
             Войти
           </button>
 
@@ -73,3 +86,4 @@ export const Login: React.FC = () => {
     </div>
   );
 };
+
