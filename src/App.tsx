@@ -1,6 +1,7 @@
 import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider, Outlet } from 'react-router-dom';
         
 import HomePage from "./pages/HomePage";
+import EventsPage from "./pages/EventsPage";
 import { Login } from "./pages/LoginPage";
 import { Register } from "./pages/RegisterPage";
 import MyEventsPage from "./pages/MyEventsPage";
@@ -23,6 +24,7 @@ const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<Layout />}>
       <Route index element={<HomePage />} />
+      <Route path="events" element={<EventsPage />} />
       <Route path="login" element={<Login />} />
       <Route path="register" element={<Register />} />
       <Route path="my-events" element={<MyEventsPage />} />

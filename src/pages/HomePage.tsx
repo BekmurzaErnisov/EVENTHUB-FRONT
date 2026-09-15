@@ -1,5 +1,5 @@
 function Homepage() {
-    return <>HomePage</>
+    return null;
 }
 
 export default Homepage

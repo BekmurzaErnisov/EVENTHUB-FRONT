@@ -38,19 +38,16 @@ export const Header: React.FC = () => {
       <nav className={styles.nav}>
 
         <div className={styles.brandSection}>
-          <NavLink to="/" className={styles.brand}>
+          <NavLink to="/" end className={styles.brand}>
             Event<span className={styles.brandAccent}>Hub</span>
           </NavLink>
 
           <div className={styles.mainLinks}>
-            <NavLink to="/" end className={getLinkClass}>
-              Главная
+            <NavLink to="/events" className={getLinkClass}>
+              Мероприятия
             </NavLink>
             <NavLink to="/my-events" className={getLinkClass}>
-              Мои события
-            </NavLink>
-            <NavLink to="/create-event" className={getLinkClass}>
-              Создать событие
+              Мои мероприятия
             </NavLink>
           </div>
         </div>
@@ -78,10 +75,10 @@ export const Header: React.FC = () => {
 
           <div className={styles.authLinks}>
             <NavLink to="/login" className={styles.authLink}>
-              Вход
+              Войти
             </NavLink>
             <NavLink to="/register" className={`${styles.authLink} ${styles.registerLink}`}>
-              Регистрация
+              Зарегистрироваться
             </NavLink>
           </div>
         </div>
