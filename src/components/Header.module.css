@@ -1,15 +1,17 @@
   .header {
     width: 100%;
     background-color: #ffffff;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid #edf0f4;
   }
 
   .nav {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 24px;
-    padding: 16px 40px;
+    max-width: 1280px;
+    margin: 0 auto;
+    gap: 40px;
+    padding: 12px 52px;
   }
 
   .brandSection,
@@ -22,38 +24,63 @@
   }
 
   .brandSection {
-    gap: 32px;
+    gap: 48px;
   }
 
   .brand {
-    color: #0a2540;
-    font-size: 24px;
+    color: #111827;
+    font-size: 28px;
     font-weight: 700;
+    letter-spacing: -0.03em;
     text-decoration: none;
   }
 
   .brandAccent {
-    color: #2563eb;
+    color: #1464e8;
   }
 
   .mainLinks {
-    gap: 24px;
+    gap: 36px;
+    height: 42px;
   }
 
   .navLink {
-    color: #4b5563;
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 100%;
+    color: #647084;
     font-size: 15px;
     font-weight: 500;
     text-decoration: none;
   }
 
+  .navLink::after {
+    position: absolute;
+    right: 0;
+    bottom: -13px;
+    left: 0;
+    height: 2px;
+    border-radius: 2px;
+    background-color: #1464e8;
+    content: '';
+    opacity: 0;
+    transform: scaleX(0.5);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+
   .navLink:hover,
   .navLink.active {
-    color: #2563eb;
+    color: #1464e8;
+  }
+
+  .navLink.active::after {
+    opacity: 1;
+    transform: scaleX(1);
   }
 
   .actions {
-    gap: 24px;
+    gap: 28px;
   }
 
   .searchForm {
@@ -67,16 +94,27 @@
     border-bottom: 1px solid transparent;
     background-color: transparent;
     color: #111827;
-    font-size: 14px;
+    font-size: 15px;
     opacity: 0;
     outline: none;
     transition: width 0.25s ease-in-out, padding 0.25s ease-in-out, opacity 0.25s ease-in-out;
   }
 
   .searchInputOpen {
-    width: 180px;
-    padding: 4px 8px;
-    border-bottom-color: #2563eb;
+    width: 220px;
+    padding: 8px 12px;
+    border: 1px solid #e1e6ee;
+    border-radius: 5px;
+    border-bottom-color: #e1e6ee;
+    opacity: 1;
+  }
+
+  .searchForm:hover .searchInput,
+  .searchForm:focus-within .searchInput {
+    width: 220px;
+    padding: 8px 12px;
+    border: 1px solid #e1e6ee;
+    border-radius: 5px;
     opacity: 1;
   }
 
@@ -87,7 +125,7 @@
     padding: 0;
     border: 0;
     background: transparent;
-    color: #4b5563;
+    color: #647084;
     cursor: pointer;
     border-radius: 50%;
   }
@@ -95,7 +133,7 @@
   .searchButton svg {
     width: 22px;
     height: 22px;
-    color: #1f2937;
+    color: #627086;
   }
 
   .authLinks {
@@ -103,19 +141,19 @@
   }
 
   .authLink {
-    padding: 10px 20px;
-    border: 1px solid #e5e7eb;
-    border-radius: 6px;
+    padding: 8px 16px;
+    border: 1px solid #e1e6ee;
+    border-radius: 5px;
     background-color: #ffffff;
-    color: #1f2937;
+    color: #273449;
     font-size: 14px;
     font-weight: 500;
     text-decoration: none;
   }
 
   .registerLink {
-    border-color: #2563eb;
-    background-color: #2563eb;
+    border-color: #1464e8;
+    background-color: #1464e8;
     color: #ffffff;
   }
 
