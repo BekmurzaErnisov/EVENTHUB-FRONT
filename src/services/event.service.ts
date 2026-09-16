@@ -2,7 +2,7 @@ const API_URL = "http://localhost:3000";
 
 export const eventService = {
   async getMyEvents() {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("userToken");
 
     if (!token) {
       throw new Error("Пожадуйста, войдите в аккаунт");
