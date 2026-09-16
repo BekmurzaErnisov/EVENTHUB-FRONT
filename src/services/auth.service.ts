@@ -3,6 +3,12 @@ export interface LoginDto {
   password: string
 }
 
+export interface RegisterDto {
+  name: string
+  email: string
+  password: string
+}
+
 export interface AuthResponse {
   access_token?: string
   accessToken?: string
@@ -18,6 +24,25 @@ const TOKEN_KEY = 'jwt_token'
 const API_URL = 'http://localhost:3000'
 
 export const authService = {
+  async register(credentials: RegisterDto): Promise<AuthResponse> {
+    const response = await fetch(`${API_URL}/users/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(credentials),
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      const errorMessage = data.message || 'Не удалось зарегистрироваться'
+      throw new Error(Array.isArray(errorMessage) ? errorMessage.join(', ') : errorMessage)
+    }
+
+    return data
+  },
+
   async login(credentials: LoginDto): Promise<AuthResponse> {
     const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
@@ -57,6 +82,6 @@ export const authService = {
   },
   getAuthHeader(): Record<string, string> {
     const token = this.getToken()
-    return token ? { Authorization: `Bearer %{token} `}: {}
+    return token ? { Authorization: `Bearer ${token}` } : {}
   },
 }

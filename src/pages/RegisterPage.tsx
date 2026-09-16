@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import styles from './RegisterPage.module.css';
+import { authService } from '../services/auth.service';
 
 export const Register: React.FC = () => {
   const [name, setName] = useState('');
@@ -8,10 +9,11 @@ export const Register: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   
   const navigate = useNavigate();
 
-  const handleSubmit = (event: React.SyntheticEvent) => {
+  const handleSubmit = async (event: React.SyntheticEvent) => {
     event.preventDefault();
     setError('');
 
@@ -25,8 +27,15 @@ export const Register: React.FC = () => {
       return;
     }
 
-    alert('Регистрация прошла успешно!');
-    navigate('/login');
+    try {
+      setLoading(true);
+      await authService.register({ name, email, password });
+      navigate('/login');
+    } catch (err: any) {
+      setError(err.message || 'Произошла ошибка при регистрации');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -104,8 +113,8 @@ export const Register: React.FC = () => {
           
           {error && <p className={styles.error}>{error}</p>}
           
-          <button type="submit" className={styles.submitButton}>
-            Зарегистрироваться
+          <button type="submit" className={styles.submitButton} disabled={loading}>
+            {loading ? 'Регистрация...' : 'Зарегистрироваться'}
           </button>
 
           <div className={styles.footer}>
