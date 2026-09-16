@@ -28,7 +28,7 @@ const router = createBrowserRouter(
       <Route path="login" element={<Login />} />
       <Route path="register" element={<Register />} />
       <Route path="my-events" element={<MyEventsPage />} />
-      <Route path="create-event" element={<CreateEventPage />} />
+      <Route path="events/create" element={<CreateEventPage />} />
       <Route path="events/:id" element={<DetailPage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Route>
