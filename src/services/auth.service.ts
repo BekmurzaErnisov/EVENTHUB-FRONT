@@ -20,7 +20,7 @@ export interface AuthResponse {
   }
 }
 
-const TOKEN_KEY = 'jwt_token'
+const TOKEN_KEY = 'userToken'
 const API_URL = 'http://localhost:3000'
 
 export const authService = {

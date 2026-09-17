@@ -3,11 +3,11 @@ import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider, O
 import HomePage from "./pages/HomePage";
 import EventsPage from "./pages/EventsPage";
 import { Login } from "./pages/LoginPage";
-import { Register } from "./pages/RegisterPage";
 import MyEventsPage from "./pages/MyEventsPage";
 import CreateEventPage from "./pages/CreateEventPage";
 import DetailPage from "./pages/DetailPage";
 import NotFoundPage from "./pages/NotFoundPage";
+import { RegisterPage } from './pages/RegisterPage';
 
 import Header from "./components/Header"
 
@@ -26,7 +26,7 @@ const router = createBrowserRouter(
       <Route index element={<HomePage />} />
       <Route path="events" element={<EventsPage />} />
       <Route path="login" element={<Login />} />
-      <Route path="register" element={<Register />} />
+      <Route path="register" element={<RegisterPage />} />
       <Route path="my-events" element={<MyEventsPage />} />
       <Route path="events/create" element={<CreateEventPage />} />
       <Route path="events/:id" element={<DetailPage />} />

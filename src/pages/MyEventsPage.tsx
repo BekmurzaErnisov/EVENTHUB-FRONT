@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { CalendarDays, MapPin, Edit2, Trash2, LogOut } from "lucide-react";
 import { eventService } from "../services/event.service";
+import { useAuth } from "../AuthContext"; // Импортируем хук авторизации
 import styles from "./MyEventsPage.module.css";
 
 interface EventItem {
@@ -16,29 +17,43 @@ interface EventItem {
 
 export const MyEventsPage: React.FC = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"created" | "joined">("created");
+  const { isAuthenticated } = useAuth();
 
+  const [activeTab, setActiveTab] = useState<"created" | "joined">("created");
   const [createdEvents, setCreatedEvents] = useState<EventItem[]>([]);
   const [joinedEvents, setJoinedEvents] = useState<EventItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-  const fetchData = async () => {
-    try {
-      setIsLoading(true);
-      const data = await eventService.getMyEvents();
-      setCreatedEvents(data.created || []);
-      setJoinedEvents(data.joined || []);
-    } catch (err: any) {
-      setError(err.message || "Произошла ошибка при загрузке");
-    } finally {
+    if (!isAuthenticated) {
       setIsLoading(false);
+      return;
     }
-  };
 
-  fetchData();
-}, []);
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        const data = await eventService.getMyEvents();
+        setCreatedEvents(data.created || []);
+        setJoinedEvents(data.joined || []);
+      } catch (err: any) {
+        setError(err.message || 'Ошибка загрузки');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [isAuthenticated]);
+
+  if (!isAuthenticated) {
+    return (
+      <div className={styles.container}>
+        <p style={{ color: 'red' }}>Пожалуйста, войдите в аккаунт</p>
+      </div>
+    );
+  }
 
   const handleDeleteCreated = async (id: string) => {
     if (confirm("Вы уверены, что хотите удалить это мероприятие?")) {
@@ -62,20 +77,41 @@ export const MyEventsPage: React.FC = () => {
     }
   };
 
-  const currentList = activeTab === "created" ? createdEvents : joinedEvents;
+  if (!isAuthenticated) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.emptyState}>
+          <p style={{ color: "red", fontSize: "1.1rem", marginBottom: "1rem" }}>
+            Пожалуйста, войдите в аккаунт
+          </p>
+          <button
+            onClick={() => navigate("/login")}
+            className={styles.createBtn}
+          >
+            Войти
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-  if (isLoading)
+  if (isLoading) {
     return (
       <div className={styles.container}>
         <p>Загрузка...</p>
       </div>
     );
-  if (error)
+  }
+
+  if (error) {
     return (
       <div className={styles.container}>
         <p style={{ color: "red" }}>{error}</p>
       </div>
     );
+  }
+
+  const currentList = activeTab === "created" ? createdEvents : joinedEvents;
 
   return (
     <div className={styles.container}>
