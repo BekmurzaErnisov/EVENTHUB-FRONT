@@ -1,11 +1,12 @@
 const API_URL = "http://localhost:3000";
+const TOKEN_KEY = "userToken";
 
 export const eventService = {
   async getMyEvents() {
-    const token = localStorage.getItem("userToken");
+    const token = localStorage.getItem(TOKEN_KEY);
 
     if (!token) {
-      throw new Error("Пожадуйста, войдите в аккаунт");
+      throw new Error("Пожалуйста, войдите в аккаунт");
     }
 
     const response = await fetch(`${API_URL}/events/my`, {
@@ -24,7 +25,7 @@ export const eventService = {
   },
 
   async deleteEvent(id: string) {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem(TOKEN_KEY);
     const response = await fetch(`${API_URL}/events/${id}`, {
       method: "DELETE",
       headers: {
@@ -36,7 +37,7 @@ export const eventService = {
   },
 
   async cancelRegistration(id: string) {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem(TOKEN_KEY);
     const response = await fetch(`${API_URL}/events/${id}/leave`, {
       method: "POST",
       headers: {
