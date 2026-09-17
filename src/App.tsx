@@ -3,7 +3,7 @@ import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider, O
 import HomePage from "./pages/HomePage";
 import EventsPage from "./pages/EventsPage";
 import { Login } from "./pages/LoginPage";
-import MyEventsPage from "./pages/MyEventsPage";
+import MyEventsPage from './pages/MyEventsPage';
 import CreateEventPage from "./pages/CreateEventPage";
 import DetailPage from "./pages/DetailPage";
 import NotFoundPage from "./pages/NotFoundPage";

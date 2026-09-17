@@ -1,6 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./CreateEventPage.module.css";
+import { authService } from "../services/auth.service";
+
+interface Category {
+  id: number;
+  name: string;
+}
 
 export const CreateEventPage: React.FC = () => {
   const navigate = useNavigate();
@@ -14,6 +20,16 @@ export const CreateEventPage: React.FC = () => {
   const [price, setPrice] = useState("");
   const [seats, setSeats] = useState("");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetch("http://localhost:3000/categories")
+      .then((response) => response.json())
+      .then(setCategories)
+      .catch(() => setError("Не удалось загрузить категории"));
+  }, []);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -22,18 +38,51 @@ export const CreateEventPage: React.FC = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log({
-      title,
-      description,
-      date,
-      time,
-      location,
-      category,
-      price,
-      seats,
-    });
+    setError("");
+
+    if (!authService.getToken()) {
+      setError("Чтобы создать мероприятие, войдите в аккаунт");
+      return;
+    }
+
+    if (!title || !description || !date || !time || !location || !category) {
+      setError("Заполните все обязательные поля");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await fetch("http://localhost:3000/events", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authService.getAuthHeader(),
+        },
+        body: JSON.stringify({
+          title,
+          description,
+          date: `${date}T${time}:00`,
+          location,
+          categoryId: Number(category),
+          price: Number(price) || 0,
+          capacity: Number(seats) || 1,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        const message = data.message || "Не удалось создать мероприятие";
+        throw new Error(Array.isArray(message) ? message.join(", ") : message);
+      }
+
+      navigate(`/events/${data.id}`);
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Ошибка создания мероприятия");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -179,14 +228,9 @@ export const CreateEventPage: React.FC = () => {
               className={styles.select}
             >
                 <option value="">Выберите категорию</option>
-                <option value="sport">Спорт</option>
-                <option value="cinema">Кино</option>
-                <option value="music">Музыка</option>
-                <option value="education">Образование</option>
-                <option value="conference">Конференции</option>
-                <option value="exhibition">Выставки</option>
-                <option value="theatre">Театр</option>
-                <option value="other">Другое</option>
+                {categories.map((item) => (
+                  <option value={item.id} key={item.id}>{item.name}</option>
+                ))}
             </select>
           </div>
 
@@ -223,6 +267,8 @@ export const CreateEventPage: React.FC = () => {
           </div>
         </div>
 
+        {error && <p className={styles.error}>{error}</p>}
+
         <div className={styles.actions}>
           <button
             type="button"
@@ -231,8 +277,8 @@ export const CreateEventPage: React.FC = () => {
           >
             ← Отмена
           </button>
-          <button type="submit" className={styles.submitButton}>
-            Создать мероприятие
+          <button type="submit" className={styles.submitButton} disabled={loading}>
+            {loading ? "Создание..." : "Создать мероприятие"}
           </button>
         </div>
       </form>
