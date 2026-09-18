@@ -10,6 +10,7 @@ export interface User {
 interface AuthContextType {
   isAuthenticated: boolean;
   user: User | null;
+  loading: boolean
   login: (token: string, userData?: User) => void;
   logout: () => void;
 }
@@ -17,6 +18,7 @@ interface AuthContextType {
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [loading] = useState<boolean>(false)
   const [user, setUser] = useState<User | null>(() => {
     const savedUser = localStorage.getItem('userData');
     return savedUser ? JSON.parse(savedUser) : null;
@@ -43,7 +45,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
