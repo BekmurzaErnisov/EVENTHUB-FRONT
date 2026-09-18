@@ -1,16 +1,23 @@
-import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider, Outlet } from 'react-router-dom';
-        
+import {
+  createBrowserRouter,
+  createRoutesFromElements,
+  Route,
+  RouterProvider,
+  Outlet,
+} from "react-router-dom";
+
 import HomePage from "./pages/HomePage";
 import EventsPage from "./pages/EventsPage";
 import { Login } from "./pages/LoginPage";
-import MyEventsPage from './pages/MyEventsPage';
+import MyEventsPage from "./pages/MyEventsPage";
 import CreateEventPage from "./pages/CreateEventPage";
 import DetailPage from "./pages/DetailPage";
 import NotFoundPage from "./pages/NotFoundPage";
-import { RegisterPage } from './pages/RegisterPage';
-import { SettingsPage } from './pages/SettingsPage';
+import { RegisterPage } from "./pages/RegisterPage";
+import { SettingsPage } from "./pages/SettingsPage";
 
-import Header from "./components/Header"
+import Header from "./components/Header";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 const Layout = () => {
   return (
@@ -28,14 +35,37 @@ const router = createBrowserRouter(
       <Route path="events" element={<EventsPage />} />
       <Route path="login" element={<Login />} />
       <Route path="register" element={<RegisterPage />} />
-      <Route path="/settings" element={<SettingsPage />} />
-      <Route path="my-events" element={<MyEventsPage />} />
-      <Route path="events/create" element={<CreateEventPage />} />
       <Route path="events/:id" element={<DetailPage />} />
+      
+      <Route
+        path="settings"
+        element={
+          <ProtectedRoute>
+            <SettingsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="my-events"
+        element={
+          <ProtectedRoute>
+            <MyEventsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="events/create"
+        element={
+          <ProtectedRoute>
+            <CreateEventPage />
+          </ProtectedRoute>
+        }
+      />
+
       <Route path="*" element={<NotFoundPage />} />
-    </Route>
-  )
-)
+    </Route>,
+  ),
+);
 
 export default function App() {
   return <RouterProvider router={router} />;
