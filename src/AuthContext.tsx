@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
+import { authService } from './services/auth.service';
 
 export interface User {
   id: string;
@@ -12,6 +13,7 @@ interface AuthContextType {
   user: User | null;
   login: (token: string, userData?: User) => void;
   logout: () => void;
+  deleteAccount: () => Promise<void>
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -42,8 +44,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsAuthenticated(false);
   };
 
+  const deleteAccount = async () => {
+    await authService.deleteAccount()
+    logout()
+  }
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, deleteAccount }}>
       {children}
     </AuthContext.Provider>
   );
