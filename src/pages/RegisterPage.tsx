@@ -27,18 +27,22 @@ export const RegisterPage = () => {
 
     try {
       setLoading(true);
-      const data = await authService.register({ name, email, password })
-      const token = data.access_token
-      const userData = data.user || {
-        name: name || email.split('@')[0],
-        email: email
-      }
+      const data = await authService.register({ name, email, password });
 
-      if(token) {
-        login(token, userData as any)
-        navigate('/')
+      const token = data.access_token || data.accessToken;
+      const refreshToken = data.refresh_token || data.refreshToken;
+
+      const userData = data.user || {
+        id: "",
+        name: name || email.split("@")[0],
+        email: email,
+      };
+
+      if (token) {
+        login(token, refreshToken, userData as any);
+        navigate("/");
       } else {
-        navigate('/login')
+        navigate("/login");
       }
     } catch (err: any) {
       setError(err.message || "Ошибка при регистрации");

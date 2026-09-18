@@ -25,11 +25,12 @@ export const Login: React.FC = () => {
       setLoading(true)
       const data = await authService.login({ email, password })
       const token = data.access_token
+      const refreshToken = data.refresh_token || data.refreshToken
       const fallbackName = email.split('@')[0]
       const userData = data.user || { email, name: fallbackName }
 
       if(token) {
-        login(token, userData as any)
+        login(token, refreshToken, userData as any)
         navigate('/')
       } else {
         setError('Токен не получен')
