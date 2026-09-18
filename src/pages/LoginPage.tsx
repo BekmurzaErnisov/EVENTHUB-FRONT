@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styles from './LoginPage.module.css';
 import { authService } from '../services/auth.service';
+import { useAuth } from '../AuthContext';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate()
+  const { login } = useAuth()
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -21,8 +23,17 @@ export const Login: React.FC = () => {
 
     try {
       setLoading(true)
-      await authService.login({ email, password })
-      navigate('/')
+      const data = await authService.login({ email, password })
+      const token = data.access_token
+      const fallbackName = email.split('@')[0]
+      const userData = data.user || { email, name: fallbackName }
+
+      if(token) {
+        login(token, userData as any)
+        navigate('/')
+      } else {
+        setError('Токен не получен')
+      }
     } catch (err: any) {
       setError(err.message || 'Произошла ошибка при входе')
     } finally {
