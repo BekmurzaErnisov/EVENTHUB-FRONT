@@ -1,15 +1,18 @@
 import React, { useEffect, useRef, useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../AuthContext";
 import styles from "./Header.module.css";
 
 export const Header: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   const navigate = useNavigate();
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
 
   const getLinkClass = ({ isActive }: { isActive: boolean }) => {
     return isActive ? `${styles.navLink} ${styles.active}` : styles.navLink;
@@ -26,7 +29,6 @@ export const Header: React.FC = () => {
       searchInputRef.current?.form?.requestSubmit();
       return;
     }
-
     setIsSearchOpen(true);
   };
 
@@ -35,6 +37,21 @@ export const Header: React.FC = () => {
       searchInputRef.current?.focus();
     }
   }, [isSearchOpen]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+  const displayName = user?.name || user?.email || "Профиль"
+  const avatarLetter = displayName.charAt(0).toUpperCase()
 
   return (
     <header className={styles.header}>
@@ -93,17 +110,55 @@ export const Header: React.FC = () => {
 
           <div className={styles.authLinks}>
             {isAuthenticated ? (
-              <button
-                onClick={logout}
-                className={styles.authLink}
-                style={{
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                }}
-              >
-                Выйти
-              </button>
+              <div className={styles.profileMenuContainer} ref={menuRef}>
+                <button
+                  type="button"
+                  className={styles.profileTrigger}
+                  onClick={() => setIsMenuOpen((prev) => !prev)}
+                >
+                  <div className={styles.avatar}>
+                    {user?.avatarUrl ? (
+                      <img src={user.avatarUrl} alt={displayName} />
+                    ) : (
+                      <span>{avatarLetter}</span>
+                    )}
+                  </div>
+                  <span className={styles.userName}>
+                    {displayName}
+                  </span>
+                </button>
+
+                {isMenuOpen && (
+                  <div className={styles.dropdownMenu}>
+                    <div className={styles.menuHeader}>
+                      <p className={styles.menuName}>
+                        {displayName}
+                      </p>
+                      {user?.email && (
+                        <p className={styles.menuEmail}>{user.email}</p>
+                      )}
+                    </div>
+                    <hr className={styles.divider} />
+                    <Link
+                      to="/settings"
+                      className={styles.menuItem}
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Настройки аккаунта
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        logout();
+                      }}
+                      className={`${styles.menuItem} ${styles.logoutBtn}`}
+                    >
+                      Выйти
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
               <>
                 <NavLink to="/login" className={styles.authLink}>

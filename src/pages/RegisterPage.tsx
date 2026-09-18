@@ -27,15 +27,18 @@ export const RegisterPage = () => {
 
     try {
       setLoading(true);
-      const response = await authService.register({ name, email, password });
-      const token = response.access_token || response.accessToken;
+      const data = await authService.register({ name, email, password })
+      const token = data.access_token
+      const userData = data.user || {
+        name: name || email.split('@')[0],
+        email: email
+      }
 
-      if (token) {
-        login(token);
-
-        navigate("/");
+      if(token) {
+        login(token, userData as any)
+        navigate('/')
       } else {
-        setError("Токен не получен от сервера");
+        navigate('/login')
       }
     } catch (err: any) {
       setError(err.message || "Ошибка при регистрации");

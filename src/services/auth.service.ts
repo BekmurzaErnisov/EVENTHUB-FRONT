@@ -24,6 +24,46 @@ const TOKEN_KEY = 'userToken'
 const API_URL = 'http://localhost:3000'
 
 export const authService = {
+  async updateProfile(data: {name: string, email: string, avatarUrl?:string }) {
+    const token = localStorage.getItem('userToken')
+    const response = await fetch(`${API_URL}/users/me`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(data)
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.message || 'Ошибка обновления профиля');
+    }
+    return response.json()
+  },
+
+  async changePassword(dto: { oldPassword?: string; newPassword?: string }) {
+    const token = localStorage.getItem('userToken')
+
+    const response = await fetch(`${API_URL}/users/me/password`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        oldPassword: dto.oldPassword,
+        newPassword: dto.newPassword,
+      }),
+    })
+
+    if(!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Ошибка смены пароля');
+    }
+    return await response.json();
+  },
+
   async register(credentials: RegisterDto): Promise<AuthResponse> {
     const response = await fetch(`${API_URL}/users/register`, {
       method: 'POST',

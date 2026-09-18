@@ -8,6 +8,7 @@ import CreateEventPage from "./pages/CreateEventPage";
 import DetailPage from "./pages/DetailPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import { RegisterPage } from './pages/RegisterPage';
+import { SettingsPage } from './pages/SettingsPage';
 
 import Header from "./components/Header"
 
@@ -27,6 +28,7 @@ const router = createBrowserRouter(
       <Route path="events" element={<EventsPage />} />
       <Route path="login" element={<Login />} />
       <Route path="register" element={<RegisterPage />} />
+      <Route path="/settings" element={<SettingsPage />} />
       <Route path="my-events" element={<MyEventsPage />} />
       <Route path="events/create" element={<CreateEventPage />} />
       <Route path="events/:id" element={<DetailPage />} />
