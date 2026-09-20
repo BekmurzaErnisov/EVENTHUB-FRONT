@@ -217,7 +217,11 @@ function DetailPage() {
         </div>
         <div>
           <CircleDollarSign className={styles.detailIcon} size={20} />
-          <span>{event.price ? `от ${event.price} ₽` : "Бесплатно"}</span>
+          <span>
+            {event.price
+              ? <>{`от ${new Intl.NumberFormat('ru-RU').format(event.price)} `}<span className={styles.currencyBadge}>сом</span></>
+              : 'Бесплатно'}
+          </span>
         </div>
         <div>
           <UsersRound className={styles.detailIcon} size={20} />

@@ -1,6 +1,6 @@
 import styles from './EventsPage.module.css';
 import { CalendarDays, MapPin, Search, CircleDollarSign, UserCheck } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
 interface EventItem {
@@ -36,6 +36,11 @@ function EventsPage() {
   const [error, setError] = useState('');
   
   const locationHook = useLocation();
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    setSearch(searchParams.get('search') || '');
+  }, [searchParams]);
 
   useEffect(() => {
     const loadEvents = async () => {
@@ -86,7 +91,12 @@ function EventsPage() {
 
   const formatPrice = (price?: number | null) => {
     if (price === undefined || price === null || price === 0) return 'Бесплатно';
-    return `от ${price} ₽`;
+    return (
+      <>
+        от {new Intl.NumberFormat('ru-RU').format(price)}{' '}
+        <span className={styles.currencyBadge}>сом</span>
+      </>
+    );
   };
 
   const getSeatsText = (event: EventItem) => {
