@@ -224,7 +224,7 @@ function MyEventsPage() {
                 </div>
                 <div className={styles.priceRow}>
                   <span className={styles.price}>
-                    {event.price ? `${event.price} ₽` : "Бесплатно"}
+                    {event.price ? <>{new Intl.NumberFormat('ru-RU').format(event.price)} <span className={styles.currencyBadge}>сом</span></> : "Бесплатно"}
                   </span>
                 </div>
                 <div className={styles.actions}>

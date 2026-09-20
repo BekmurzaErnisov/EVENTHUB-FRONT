@@ -281,7 +281,7 @@ export const CreateEventPage: React.FC = () => {
               Цена билета <span>*</span>
             </label>
             <div className={styles.inputIconGroup}>
-              <span className={styles.icon}>₽</span>
+              <span className={styles.currencyBadge}>сом</span>
               <input
                 type="number"
                 placeholder="Например, 500"

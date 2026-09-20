@@ -1,6 +1,6 @@
 import React from 'react';
 import styles from './EventCard.module.css';
-import { Calendar, MapPin, RussianRuble, Users } from 'lucide-react';
+import { Calendar, CircleDollarSign, MapPin, Users } from 'lucide-react';
 
 interface EventData {
   id: number | string;
@@ -51,9 +51,16 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
           </div>
           
           <div className={styles.infoItem}>
-            <RussianRuble size={16} className={styles.icon} />
+            <CircleDollarSign size={16} className={styles.icon} />
             <span className={styles.priceText}>
-              {typeof price === 'number' ? `от ${price} ₽` : price}
+              {typeof price === 'number' && price > 0 ? (
+                <>
+                  от {new Intl.NumberFormat('ru-RU').format(price)}{' '}
+                  <span className={styles.currencyBadge}>сом</span>
+                </>
+              ) : (
+                price === 0 ? 'Бесплатно' : price
+              )}
             </span>
           </div>
           

@@ -22,8 +22,21 @@ export const Header: React.FC = () => {
 
   const handleSearchSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    if (!searchQuery.trim()) return;
-    navigate(`/my-events?search=${encodeURIComponent(searchQuery.trim())}`);
+    navigate(
+      searchQuery.trim()
+        ? `/events?search=${encodeURIComponent(searchQuery.trim())}`
+        : "/events",
+    );
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    navigate(
+      value.trim()
+        ? `/events?search=${encodeURIComponent(value.trim())}`
+        : "/events",
+      { replace: true },
+    );
   };
 
   const handleSearchClick = () => {
@@ -91,7 +104,7 @@ export const Header: React.FC = () => {
               type="text"
               placeholder="Поиск..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               onBlur={() => {
                 if (!searchQuery.trim()) setIsSearchOpen(false);
               }}
