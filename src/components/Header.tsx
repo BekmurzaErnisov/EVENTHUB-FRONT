@@ -70,7 +70,7 @@ export const Header: React.FC = () => {
     <header className={styles.header}>
       <nav className={styles.nav}>
         <div className={styles.brandSection}>
-          <NavLink to="/" end className={styles.brand}>
+          <NavLink to="/events" end className={styles.brand}>
             Event<span className={styles.brandAccent}>Hub</span>
           </NavLink>
 

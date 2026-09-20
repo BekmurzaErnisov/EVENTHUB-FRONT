@@ -1,6 +1,6 @@
 import styles from './EventsPage.module.css';
-import { CalendarDays, MapPin } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { CalendarDays, MapPin, Search, CircleDollarSign, UserCheck } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
 interface EventItem {
@@ -10,6 +10,12 @@ interface EventItem {
   date: string;
   location: string;
   createdAt: string;
+  imageUrl?: string | null;
+  image?: string | null;
+  price?: number | null;
+  capacity?: number | null;
+  registeredCount?: number | null;
+  availableSeats?: number | null;
   category?: { name: string } | null;
 }
 
@@ -28,6 +34,8 @@ function EventsPage() {
   const [sort, setSort] = useState('nearest');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  
+  const locationHook = useLocation();
 
   useEffect(() => {
     const loadEvents = async () => {
@@ -45,9 +53,9 @@ function EventsPage() {
       }
     };
 
-    const timer = window.setTimeout(loadEvents, 300);
+    const timer = window.setTimeout(loadEvents, search ? 300 : 0);
     return () => window.clearTimeout(timer);
-  }, [search]);
+  }, [search, locationHook]);
 
   useEffect(() => {
     fetch(`${API_URL}/categories`)
@@ -68,6 +76,31 @@ function EventsPage() {
     return new Date(first.date).getTime() - new Date(second.date).getTime();
   });
 
+  const getImageUrl = (url?: string | null) => {
+    if (!url) return null;
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    return `${API_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+  };
+
+  const formatPrice = (price?: number | null) => {
+    if (price === undefined || price === null || price === 0) return 'Бесплатно';
+    return `от ${price} ₽`;
+  };
+
+  const getSeatsText = (event: EventItem) => {
+    if (event.availableSeats !== undefined && event.availableSeats !== null) {
+      return `Осталось ${event.availableSeats} мест`;
+    }
+    if (event.capacity !== undefined && event.capacity !== null) {
+      const registered = event.registeredCount || 0;
+      const left = Math.max(0, event.capacity - registered);
+      return `Осталось ${left} мест`;
+    }
+    return 'Места есть';
+  };
+
   return (
     <main className={styles.page}>
       <section className={styles.hero}>
@@ -76,7 +109,7 @@ function EventsPage() {
 
         <div className={styles.filters}>
           <label className={styles.searchField}>
-            <span aria-hidden="true">⌕</span>
+            <Search className={styles.searchIcon} aria-hidden="true" />
             <input
               type="search"
               placeholder="Поиск мероприятий по названию..."
@@ -114,24 +147,57 @@ function EventsPage() {
       {!loading && !error && visibleEvents.length === 0 && (
         <p className={styles.status}>Мероприятий пока нет.</p>
       )}
-      {!loading && !error && visibleEvents.length > 0 && <section className={styles.eventsGrid} aria-label="Список мероприятий">
-        {visibleEvents.map((event) => (
-          <article className={styles.eventCard} key={event.id}>
-            <div className={styles.imageWrapper}>
-              <div className={styles.imagePlaceholder} aria-hidden="true">{event.category?.name?.slice(0, 1) || 'М'}</div>
-              <span className={styles.category}>{event.category?.name || 'Мероприятие'}</span>
-            </div>
-            <div className={styles.cardContent}>
-              <h3>{event.title}</h3>
-              <ul className={styles.eventMeta}>
-                <li><CalendarDays aria-hidden="true" />{new Date(event.date).toLocaleString('ru-RU', { dateStyle: 'medium', timeStyle: 'short' })}</li>
-                <li><MapPin aria-hidden="true" />{event.location}</li>
-              </ul>
-              <Link to={`/events/${event.id}`} className={styles.detailsLink}>Подробнее</Link>
-            </div>
-          </article>
-        ))}
-        </section>}
+      {!loading && !error && visibleEvents.length > 0 && (
+        <section className={styles.eventsGrid} aria-label="Список мероприятий">
+          {visibleEvents.map((event) => {
+            const imageSrc = getImageUrl(event.imageUrl || event.image);
+
+            return (
+              <article className={styles.eventCard} key={event.id}>
+                <div className={styles.imageWrapper}>
+                  {imageSrc ? (
+                    <img
+                      src={imageSrc}
+                      alt={event.title}
+                      className={styles.eventImage}
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  ) : (
+                    <div className={styles.imagePlaceholder} aria-hidden="true">
+                      {event.category?.name?.slice(0, 1) || 'М'}
+                    </div>
+                  )}
+                  <span className={styles.category}>{event.category?.name || 'Мероприятие'}</span>
+                </div>
+                <div className={styles.cardContent}>
+                  <h3>{event.title}</h3>
+                  <ul className={styles.eventMeta}>
+                    <li>
+                      <CalendarDays aria-hidden="true" />
+                      {new Date(event.date).toLocaleString('ru-RU', { dateStyle: 'medium', timeStyle: 'short' })}
+                    </li>
+                    <li>
+                      <MapPin aria-hidden="true" />
+                      {event.location}
+                    </li>
+                    <li>
+                      <CircleDollarSign aria-hidden="true" />
+                      {formatPrice(event.price)}
+                    </li>
+                    <li>
+                      <UserCheck aria-hidden="true" />
+                      {getSeatsText(event)}
+                    </li>
+                  </ul>
+                  <Link to={`/events/${event.id}`} className={styles.detailsLink}>Подробнее</Link>
+                </div>
+              </article>
+            );
+          })}
+        </section>
+      )}
     </main>
   );
 }

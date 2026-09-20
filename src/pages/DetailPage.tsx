@@ -21,6 +21,8 @@ interface EventDetails {
   location: string;
   price: number;
   capacity: number;
+  registeredCount?: number;
+  availableSeats?: number;
   imageUrl?: string;
   category?: { name: string } | null;
   organizer?: { name: string } | null;
@@ -37,43 +39,43 @@ function DetailPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const loadEvent = async () => {
+    if (!id) return;
+    try {
+      const token = authService.getToken();
+      const headers: Record<string, string> = {};
+
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`${API_URL}/events/${id}`, { headers });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok)
+        throw new Error(data.message || "Мероприятие не найдено");
+
+      setEvent(data);
+      if (data.isJoined !== undefined) {
+        setIsRegistered(data.isJoined);
+      }
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Ошибка загрузки",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!id) {
       setError("Мероприятие не найдено");
       setLoading(false);
       return;
     }
-
-    const loadEvent = async () => {
-      try {
-        const token = authService.getToken();
-        const headers: Record<string, string> = {};
-
-        if (token) {
-          headers["Authorization"] = `Bearer ${token}`;
-        }
-
-        const response = await fetch(`${API_URL}/events/${id}`, { headers });
-        const data = await response.json().catch(() => ({}));
-
-        if (!response.ok)
-          throw new Error(data.message || "Мероприятие не найдено");
-
-        setEvent(data);
-        if (data.isJoined !== undefined) {
-          setIsRegistered(data.isJoined);
-        }
-      } catch (requestError) {
-        setError(
-          requestError instanceof Error
-            ? requestError.message
-            : "Ошибка загрузки",
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadEvent();
   }, [id]);
 
@@ -101,6 +103,7 @@ function DetailPage() {
         throw new Error(data.message || "Не удалось записаться на мероприятие");
 
       setIsRegistered(true);
+      await loadEvent();
     } catch (requestError) {
       setError(
         requestError instanceof Error ? requestError.message : "Ошибка записи",
@@ -137,6 +140,8 @@ function DetailPage() {
       }
 
       setIsRegistered(false);
+      // Перезагружаем данные мероприятия, чтобы вернуть свободные места
+      await loadEvent();
     } catch (requestError) {
       setError(
         requestError instanceof Error
@@ -151,6 +156,17 @@ function DetailPage() {
   if (loading) return <div>Загрузка мероприятия...</div>;
   if (error && !event) return <div>{error}</div>;
   if (!event) return <div>Мероприятие не найдено</div>;
+
+  // Вычисление оставшихся мест
+  const getSeatsDisplay = () => {
+    if (event.availableSeats !== undefined && event.availableSeats !== null) {
+      return `Осталось мест: ${event.availableSeats}`;
+    }
+    if (event.capacity && event.registeredCount !== undefined) {
+      return `Осталось мест: ${Math.max(0, event.capacity - event.registeredCount)}`;
+    }
+    return `Мест всего: ${event.capacity}`;
+  };
 
   return (
     <div className={styles.eventPage}>
@@ -205,7 +221,7 @@ function DetailPage() {
         </div>
         <div>
           <UsersRound className={styles.detailIcon} size={20} />
-          <span>Мест всего: {event.capacity}</span>
+          <span>{getSeatsDisplay()}</span>
         </div>
         <div>
           <UserRound className={styles.detailIcon} size={20} />
