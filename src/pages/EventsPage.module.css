@@ -109,7 +109,7 @@
 
 .eventsGrid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
   gap: 24px;
   max-width: 1400px;
   margin: 0 auto;
@@ -219,26 +219,109 @@
   background: #1d4ed8;
 }
 
-@media (max-width: 1200px) {
-  .eventsGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 640px) {
+@media (max-width: 1500px) {
   .hero,
   .eventsSection,
   .eventsGrid {
-    padding-right: 20px;
-    padding-left: 20px;
+    padding-right: 40px;
+    padding-left: 40px;
+  }
+}
+
+@media (max-width: 1300px) {
+  .hero,
+  .eventsSection,
+  .eventsGrid {
+    padding-right: 36px;
+    padding-left: 36px;
+  }
+
+  .eventsGrid {
+    gap: 20px;
+  }
+}
+
+@media (max-width: 1100px) {
+  .filters {
+    grid-template-columns: minmax(240px, 1.4fr) minmax(180px, 0.8fr) minmax(190px, 0.8fr);
+  }
+
+}
+
+@media (max-width: 900px) {
+  .hero,
+  .eventsSection,
+  .eventsGrid {
+    padding-right: 32px;
+    padding-left: 32px;
+  }
+
+  .filters {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .searchField {
+    grid-column: 1 / -1;
+  }
+
+}
+
+@media (max-width: 700px) {
+  .hero,
+  .eventsSection,
+  .eventsGrid {
+    padding-right: 28px;
+    padding-left: 28px;
+  }
+}
+
+@media (max-width: 600px) {
+  .hero,
+  .eventsSection,
+  .eventsGrid {
+    padding-right: 22px;
+    padding-left: 22px;
   }
 
   .filters {
     grid-template-columns: 1fr;
   }
+}
+
+@media (max-width: 500px) {
+  .hero {
+    padding-top: 30px;
+  }
+
+  .hero h1 {
+    font-size: clamp(28px, 8vw, 34px);
+  }
 
   .eventsGrid {
-    grid-template-columns: 1fr;
+    gap: 16px;
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 450px) {
+  .hero,
+  .eventsSection,
+  .eventsGrid {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .hero p {
+    margin-bottom: 20px;
+  }
+
+  .searchField,
+  .filters select {
+    min-height: 44px;
+  }
+
+  .eventsGrid {
+    padding-bottom: 36px;
   }
 }
 
