@@ -4,7 +4,7 @@ import styles from "./CreateEventPage.module.css";
 import { authService } from "../services/auth.service";
 
 interface Category {
-  id: string;
+  id: number;
   name: string;
 }
 
@@ -16,7 +16,7 @@ export const CreateEventPage: React.FC = () => {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [location, setLocation] = useState("");
-  const [category, setCategory] = useState("");
+  const [category, setCategory] = useState<number | "">("");
   const [price, setPrice] = useState("");
   const [seats, setSeats] = useState("");
 
@@ -33,7 +33,7 @@ export const CreateEventPage: React.FC = () => {
       .then((data: Category[]) => {
         setCategories(data);
         if (data && data.length > 0) {
-          setCategory(data[0].id);
+          setCategory(Number(data[0].id));
         }
       })
       .catch(() => setError("Не удалось загрузить категории"));
@@ -97,10 +97,10 @@ export const CreateEventPage: React.FC = () => {
           description,
           date: `${date}T${time}:00`,
           location,
-          categoryId: category,
+          categoryId: Number(category),
           price: Number(price) || 0,
           capacity: Number(seats) || 1,
-          imageUrl: uploadedImageUrl, 
+          imageUrl: uploadedImageUrl,
         }),
       });
 
@@ -264,12 +264,12 @@ export const CreateEventPage: React.FC = () => {
               Категория <span>*</span>
             </label>
             <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              value={category === "" ? "" : String(category)}
+              onChange={(e) => setCategory(Number(e.target.value))}
               className={styles.select}
             >
               {categories.map((item) => (
-                <option value={item.id} key={item.id}>
+                <option value={String(item.id)} key={item.id}>
                   {item.name}
                 </option>
               ))}
