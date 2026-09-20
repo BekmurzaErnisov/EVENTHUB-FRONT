@@ -1,4 +1,5 @@
 import { authService } from "./auth.service";
+import { fetchWithAuth } from "./apiClient";
 
 const API_URL = "http://localhost:3000";
 
@@ -77,7 +78,7 @@ export const eventService = {
       throw new Error("Пожалуйста, войдите в аккаунт");
     }
 
-    const response = await fetch(`${API_URL}/events/my`, {
+    const response = await fetchWithAuth(`/events/my`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

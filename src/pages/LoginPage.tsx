@@ -4,44 +4,44 @@ import styles from './LoginPage.module.css';
 import { authService } from '../services/auth.service';
 import { useAuth } from '../AuthContext';
 
-
 export const Login: React.FC = () => {
-  const navigate = useNavigate()
-  const { login } = useAuth()
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false)
-  const location = useLocation()
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const location = useLocation();
 
-  const from = location.state?.from?.pathname || '/'
+  const from = location.state?.from?.pathname || '/';
 
   const handleSubmit = async (event: React.SyntheticEvent) => {
     event.preventDefault();
-    setError("");
+    setError('');
 
     if (!email || !password) {
-      setError("Пожалуйста, заполните все поля");
+      setError('Пожалуйста, заполните все поля');
       return;
     }
 
     try {
-      setLoading(true)
-      const data = await authService.login({ email, password })
-      const token = data.access_token
-      const fallbackName = email.split('@')[0]
-      const userData = data.user || { email, name: fallbackName }
+      setLoading(true);
+      const data = await authService.login({ email, password });
+      const token = data.access_token;
+      const refreshToken = data.refresh_token || data.refreshToken;
+      const fallbackName = email.split('@')[0];
+      const userData = data.user || { email, name: fallbackName };
 
-      if(token) {
-        login(token, userData as any)
-        navigate(from, { replace: true })
+      if (token) {
+        login(token, refreshToken, userData as any);
+        navigate(from, { replace: true });
       } else {
-        setError('Токен не получен')
+        setError('Токен не получен');
       }
     } catch (err: any) {
-      setError(err.message || 'Произошла ошибка при входе')
+      setError(err.message || 'Произошла ошибка при входе');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   };
 
@@ -52,15 +52,15 @@ export const Login: React.FC = () => {
         <p className={styles.description}>
           Войдите в свой аккаунт, чтобы управлять мероприятиями и покупать билеты
         </p>
-        
+
         <form onSubmit={handleSubmit}>
           <div className={styles.fieldGroup}>
             <label className={styles.label}>Электронная почта</label>
             <div className={styles.inputWrapper}>
-              <input 
-                type="email" 
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)} 
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@example.com"
                 className={styles.input}
               />
@@ -69,14 +69,14 @@ export const Login: React.FC = () => {
               </svg>
             </div>
           </div>
-          
+
           <div className={styles.passwordGroup}>
             <label className={styles.label}>Пароль</label>
             <div className={styles.inputWrapper}>
-              <input 
-                type="password" 
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)} 
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="Введите пароль"
                 className={styles.input}
               />
@@ -85,9 +85,9 @@ export const Login: React.FC = () => {
               </svg>
             </div>
           </div>
-          
+
           {error && <p className={styles.error}>{error}</p>}
-          
+
           <button type="submit" className={styles.submitButton} disabled={loading}>
             Войти
           </button>
@@ -101,4 +101,3 @@ export const Login: React.FC = () => {
     </div>
   );
 };
-

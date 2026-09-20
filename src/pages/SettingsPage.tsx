@@ -2,11 +2,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../AuthContext';
 import styles from './LoginPage.module.css';
 import { authService } from '../services/auth.service';
+import { useNavigate } from 'react-router-dom';
 
 const API_URL = 'http://localhost:3000';
 
 export const SettingsPage: React.FC = () => {
-  const { user, login } = useAuth();
+  const { user, login, deleteAccount } = useAuth();
+  const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [profileError, setProfileError] = useState('');
@@ -25,6 +27,9 @@ export const SettingsPage: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState('');
+
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -83,8 +88,7 @@ export const SettingsPage: React.FC = () => {
         }
 
         finalAvatarUrl = data.avatarUrl;
-      } 
-      else if (isAvatarRemoved) {
+      } else if (isAvatarRemoved) {
         await authService.deleteAvatar();
         finalAvatarUrl = null;
       }
@@ -105,7 +109,6 @@ export const SettingsPage: React.FC = () => {
 
       login(token, updatedUser as any);
 
-      // Сбрасываем временные флаги
       setSelectedFile(null);
       setIsAvatarRemoved(false);
       setProfileSuccess('Данные профиля успешно обновлены');
@@ -164,6 +167,25 @@ export const SettingsPage: React.FC = () => {
       return avatarUrl;
     }
     return `${API_URL}${avatarUrl}`;
+  };
+
+  const handleDeleteAccount = async () => {
+    const confirmed = window.confirm(
+      'Вы уверены, что хотите удалить аккаунт? Это действие необратимо и все ваши мероприятия будут удалены.'
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setIsDeleting(true);
+      setDeleteError('');
+      await deleteAccount();
+      navigate('/', { replace: true });
+    } catch (err: any) {
+      setDeleteError(err.message || 'Ошибка при удалении аккаунта');
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -365,6 +387,49 @@ export const SettingsPage: React.FC = () => {
             Изменить пароль
           </button>
         </form>
+
+        <hr style={{ border: '0', borderTop: '1px solid #e5e7eb', margin: '24px 0' }} />
+
+        <div
+          style={{
+            border: '1px solid #fecaca',
+            backgroundColor: '#fef2f2',
+            padding: '20px',
+            borderRadius: '8px',
+          }}
+        >
+          <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px', color: '#dc2626' }}>
+            Удаление аккаунта
+          </h3>
+          <p style={{ fontSize: '14px', color: '#7f1d1d', marginBottom: '16px', lineHeight: '1.4' }}>
+            После удаления аккаунта восстановить данные будет невозможно. Все ваши созданные мероприятия и настройки будут окончательно удалены.
+          </p>
+
+          {deleteError && (
+            <p className={styles.error} style={{ marginBottom: '12px' }}>
+              {deleteError}
+            </p>
+          )}
+
+          <button
+            type="button"
+            onClick={handleDeleteAccount}
+            disabled={isDeleting}
+            style={{
+              backgroundColor: '#dc2626',
+              color: '#ffffff',
+              padding: '10px 16px',
+              border: 'none',
+              borderRadius: '6px',
+              fontSize: '14px',
+              fontWeight: '500',
+              cursor: isDeleting ? 'not-allowed' : 'pointer',
+              opacity: isDeleting ? 0.7 : 1,
+            }}
+          >
+            {isDeleting ? 'Удаление...' : 'Удалить аккаунт'}
+          </button>
+        </div>
       </div>
     </div>
   );
