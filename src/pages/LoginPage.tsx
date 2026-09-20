@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import styles from './LoginPage.module.css';
 import { authService } from '../services/auth.service';
 import { useAuth } from '../AuthContext';
+
 
 export const Login: React.FC = () => {
   const navigate = useNavigate()
@@ -11,6 +12,9 @@ export const Login: React.FC = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false)
+  const location = useLocation()
+
+  const from = location.state?.from?.pathname || '/'
 
   const handleSubmit = async (event: React.SyntheticEvent) => {
     event.preventDefault();
@@ -30,7 +34,7 @@ export const Login: React.FC = () => {
 
       if(token) {
         login(token, userData as any)
-        navigate('/')
+        navigate(from, { replace: true })
       } else {
         setError('Токен не получен')
       }
