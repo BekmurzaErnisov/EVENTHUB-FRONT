@@ -95,6 +95,46 @@ export const eventService = {
     return response.json();
   },
 
+  async getEventById(id: string) {
+    const response = await fetch(`${API_URL}/events/${id}`);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw new Error(errorData?.message || "Не удалось загрузить мероприятие");
+    }
+
+    return response.json();
+  },
+
+  async updateEvent(id: string, data: Record<string, any>) {
+    const token = authService.getToken();
+
+    if (!token) {
+      throw new Error("Пожалуйста, войдите в аккаунт");
+    }
+
+    const response = await fetch(`${API_URL}/events/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (response.status === 401) {
+      authService.removeToken();
+      throw new Error("Неавторизован. Пожалуйста, войдите в аккаунт повторно.");
+    }
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw new Error(errorData?.message || "Ошибка при обновлении мероприятия");
+    }
+
+    return response.json();
+  },
+
   async deleteEvent(id: string) {
     const token = authService.getToken();
 
@@ -155,27 +195,27 @@ export const eventService = {
   },
 
   async getMyRegistrations() {
-  const token = authService.getToken();
+    const token = authService.getToken();
 
-  if (!token) {
-    throw new Error("Пожалуйста, войдите в аккаунт");
-  }
+    if (!token) {
+      throw new Error("Пожалуйста, войдите в аккаунт");
+    }
 
-  const response = await fetch(`${API_URL}/events/my/registrations`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+    const response = await fetch(`${API_URL}/events/my/registrations`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-  if (response.status === 401) {
-    authService.removeToken();
-    throw new Error("Пожалуйста, войдите в аккаунт");
-  }
+    if (response.status === 401) {
+      authService.removeToken();
+      throw new Error("Пожалуйста, войдите в аккаунт");
+    }
 
-  if (!response.ok) {
-    throw new Error("Ошибка загрузки ваших регистраций");
-  }
+    if (!response.ok) {
+      throw new Error("Ошибка загрузки ваших регистраций");
+    }
 
-  return response.json();
-},
+    return response.json();
+  },
 };
