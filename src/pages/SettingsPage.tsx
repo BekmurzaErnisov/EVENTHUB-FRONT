@@ -2,14 +2,15 @@ import React, { useState, useRef } from 'react';
 import { useAuth } from '../AuthContext';
 import styles from './LoginPage.module.css';
 import { authService } from '../services/auth.service';
+import { useNavigate } from 'react-router-dom';
 
 export const SettingsPage: React.FC = () => {
-  const { user, login } = useAuth();
+  const { user, login, deleteAccount } = useAuth();
+  const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [profileError, setProfileError] = useState('')
-  const [loadingProfile, setLoadingProfile] = useState(false)
-
+  const [profileError, setProfileError] = useState('');
+  const [loadingProfile, setLoadingProfile] = useState(false);
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
   const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl || '');
@@ -20,6 +21,9 @@ export const SettingsPage: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState('');
+
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   const displayName = name || email || 'Профиль';
   const avatarLetter = displayName.charAt(0).toUpperCase();
@@ -43,63 +47,80 @@ export const SettingsPage: React.FC = () => {
   };
 
   const handleProfileSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setProfileError('');
-  setProfileSuccess('');
+    e.preventDefault();
+    setProfileError('');
+    setProfileSuccess('');
 
-  try {
-    setLoadingProfile(true);
+    try {
+      setLoadingProfile(true);
 
-    const updateData = await authService.updateProfile({ name, email, avatarUrl });
+      const updateData = await authService.updateProfile({ name, email, avatarUrl });
+      const token = localStorage.getItem('userToken') || '';
+      const updatedUser = updateData || { ...user, name, email, avatarUrl };
 
-    const token = localStorage.getItem('userToken') || '';
-
-    const updatedUser = updateData || { ...user, name, email, avatarUrl };
-
-    login(token, updatedUser as any);
-    setProfileSuccess('Данные профиля успешно обновлены');
-  } catch (err: any) {
-    setProfileError(err.response?.data?.message || err.message || 'Ошибка обновления профиля');
-  } finally {
-    setLoadingProfile(false);
-  }
-};
+      login(token, updatedUser as any);
+      setProfileSuccess('Данные профиля успешно обновлены');
+    } catch (err: any) {
+      setProfileError(err.response?.data?.message || err.message || 'Ошибка обновления профиля');
+    } finally {
+      setLoadingProfile(false);
+    }
+  };
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setPasswordError('');
-  setPasswordSuccess('');
+    e.preventDefault();
+    setPasswordError('');
+    setPasswordSuccess('');
 
-  if (!currentPassword || !newPassword || !confirmPassword) {
-    setPasswordError('Заполните все поля пароля');
-    return;
-  }
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setPasswordError('Заполните все поля пароля');
+      return;
+    }
 
-  if (newPassword.length < 6) {
-    setPasswordError('Длина нового пароля должна быть от 6 символов');
-    return;
-  }
+    if (newPassword.length < 6) {
+      setPasswordError('Длина нового пароля должна быть от 6 символов');
+      return;
+    }
 
-  if (newPassword !== confirmPassword) {
-    setPasswordError('Пароли не совпадают');
-    return;
-  }
+    if (newPassword !== confirmPassword) {
+      setPasswordError('Пароли не совпадают');
+      return;
+    }
 
-  try {
-    await authService.changePassword({
-      oldPassword: currentPassword,
-      newPassword: newPassword,
-    });
+    try {
+      await authService.changePassword({
+        oldPassword: currentPassword,
+        newPassword: newPassword,
+      });
 
-    setPasswordSuccess('Пароль успешно обновлен');
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
-    setTimeout(() => setPasswordSuccess(''), 3000);
-  } catch (err: any) {
-    setPasswordError(err.message || 'Не удалось изменить пароль');
-  }
-};
+      setPasswordSuccess('Пароль успешно обновлен');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setTimeout(() => setPasswordSuccess(''), 3000);
+    } catch (err: any) {
+      setPasswordError(err.message || 'Не удалось изменить пароль');
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    const confirmed = window.confirm(
+      'Вы уверены, что хотите удалить аккаунт? Это действие необратимо и все ваши мероприятия будут удалены.'
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setIsDeleting(true);
+      setDeleteError('');
+      await deleteAccount();
+      navigate('/', { replace: true });
+    } catch (err: any) {
+      setDeleteError(err.message || 'Ошибка при удалении аккаунта');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <div className={styles.page}>
@@ -107,6 +128,7 @@ export const SettingsPage: React.FC = () => {
         <h2 className={styles.title}>Настройки аккаунта</h2>
         <p className={styles.description}>Управление личным профилем и безопасностью</p>
 
+        {/* Секция аватарки */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '28px' }}>
           <div
             style={{
@@ -204,7 +226,7 @@ export const SettingsPage: React.FC = () => {
           </div>
 
           {profileError && (
-            <p className={styles.error} style={{ marginBottom: '12px'}}>
+            <p className={styles.error} style={{ marginBottom: '12px' }}>
               {profileError}
             </p>
           )}
@@ -275,6 +297,49 @@ export const SettingsPage: React.FC = () => {
             Изменить пароль
           </button>
         </form>
+
+        <hr style={{ border: '0', borderTop: '1px solid #e5e7eb', margin: '24px 0' }} />
+
+        <div
+          style={{
+            border: '1px solid #fecaca',
+            backgroundColor: '#fef2f2',
+            padding: '20px',
+            borderRadius: '8px',
+          }}
+        >
+          <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px', color: '#dc2626' }}>
+            Удаление аккаунта
+          </h3>
+          <p style={{ fontSize: '14px', color: '#7f1d1d', marginBottom: '16px', lineHeight: '1.4' }}>
+            После удаления аккаунта восстановить данные будет невозможно. Все ваши созданные мероприятия и настройки будут окончательно удалены.
+          </p>
+
+          {deleteError && (
+            <p className={styles.error} style={{ marginBottom: '12px' }}>
+              {deleteError}
+            </p>
+          )}
+
+          <button
+            type="button"
+            onClick={handleDeleteAccount}
+            disabled={isDeleting}
+            style={{
+              backgroundColor: '#dc2626',
+              color: '#ffffff',
+              padding: '10px 16px',
+              border: 'none',
+              borderRadius: '6px',
+              fontSize: '14px',
+              fontWeight: '500',
+              cursor: isDeleting ? 'not-allowed' : 'pointer',
+              opacity: isDeleting ? 0.7 : 1,
+            }}
+          >
+            {isDeleting ? 'Удаление...' : 'Удалить аккаунт'}
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -133,4 +133,21 @@ export const authService = {
     const token = this.getToken()
     return token ? { Authorization: `Bearer ${token}` } : {}
   },
+
+  async deleteAccount(): Promise<void> {
+    const token = localStorage.getItem('userToken')
+
+    const response = await fetch('http://localhost:3000/users/me', {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.message || 'Не удалось удалить аккаунт')
+    }
+  }
 }
