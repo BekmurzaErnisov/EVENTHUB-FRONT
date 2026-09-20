@@ -250,3 +250,98 @@
   color: #dc2626;
   font-size: 14px;
 }
+
+@media (max-width: 1300px) {
+  .container {
+    max-width: 1000px;
+    padding-right: 32px;
+    padding-left: 32px;
+  }
+}
+
+@media (max-width: 900px) {
+  .container {
+    max-width: 760px;
+  }
+
+  .grid {
+    gap: 24px;
+  }
+
+  .rowThree {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .container {
+    padding: 32px 24px;
+  }
+
+  .grid {
+    gap: 24px;
+  }
+
+  .rowThree {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .grid,
+  .rowTwo,
+  .rowThree {
+    grid-template-columns: 1fr;
+  }
+
+  .title {
+    font-size: clamp(28px, 7vw, 36px);
+  }
+}
+
+@media (max-width: 500px) {
+  .container {
+    padding: 28px 20px;
+  }
+
+  .form {
+    gap: 20px;
+  }
+
+  .dropzone {
+    height: 210px;
+  }
+
+  .actions {
+    gap: 14px;
+  }
+
+  .submitButton {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+}
+
+@media (max-width: 450px) {
+  .container {
+    padding: 24px 16px;
+  }
+
+  .header {
+    margin-bottom: 24px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+  }
+
+  .actions {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
+
+  .cancelButton,
+  .submitButton {
+    width: 100%;
+  }
+}

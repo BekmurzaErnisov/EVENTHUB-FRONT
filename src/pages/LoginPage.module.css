@@ -141,7 +141,7 @@
   object-fit: cover;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 500px) {
 	.page {
 		padding: 16px;
 	}
@@ -152,5 +152,11 @@
 
 	.footer {
 		flex-wrap: wrap;
+	}
+}
+
+@media (max-width: 450px) {
+	.card {
+		padding: 24px 16px;
 	}
 }
