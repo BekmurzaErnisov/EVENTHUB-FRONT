@@ -25,50 +25,50 @@ function MyEventsPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-  if (!authService.getToken()) {
-    setIsLoading(false);
-    setError("Пожалуйста, войдите в аккаунт");
-    return;
-  }
-
-  const loadEvents = async () => {
-    try {
-      setIsLoading(true);
-      setError("");
-
-      const [createdRes, joinedRes] = await Promise.allSettled([
-        eventService.getMyEvents(),
-        eventService.getMyRegistrations(),
-      ]);
-
-      if (createdRes.status === "fulfilled") {
-        const data = createdRes.value;
-        setCreatedEvents(Array.isArray(data) ? data : data.created || []);
-      }
-
-      if (joinedRes.status === "fulfilled") {
-        setJoinedEvents(joinedRes.value || []);
-      }
-
-      if (createdRes.status === "rejected" && joinedRes.status === "rejected") {
-        const err = createdRes.reason;
-        setError(
-          err instanceof Error ? err.message : "Ошибка загрузки данных",
-        );
-      }
-    } catch (requestError) {
-      setError(
-        requestError instanceof Error
-          ? requestError.message
-          : "Ошибка загрузки",
-      );
-    } finally {
+    if (!authService.getToken()) {
       setIsLoading(false);
+      setError("Пожалуйста, войдите в аккаунт");
+      return;
     }
-  };
 
-  loadEvents();
-}, []);
+    const loadEvents = async () => {
+      try {
+        setIsLoading(true);
+        setError("");
+
+        const [createdRes, joinedRes] = await Promise.allSettled([
+          eventService.getMyEvents(),
+          eventService.getMyRegistrations(),
+        ]);
+
+        if (createdRes.status === "fulfilled") {
+          const data = createdRes.value;
+          setCreatedEvents(Array.isArray(data) ? data : data.created || []);
+        }
+
+        if (joinedRes.status === "fulfilled") {
+          setJoinedEvents(joinedRes.value || []);
+        }
+
+        if (createdRes.status === "rejected" && joinedRes.status === "rejected") {
+          const err = createdRes.reason;
+          setError(
+            err instanceof Error ? err.message : "Ошибка загрузки данных",
+          );
+        }
+      } catch (requestError) {
+        setError(
+          requestError instanceof Error
+            ? requestError.message
+            : "Ошибка загрузки",
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadEvents();
+  }, []);
 
   const handleDeleteCreated = async (id: string) => {
     if (!window.confirm("Вы уверены, что хотите удалить это мероприятие?"))
@@ -87,10 +87,22 @@ function MyEventsPage() {
   };
 
   const handleCancelJoined = async (id: string) => {
-    if (!window.confirm("Отменить запись на мероприятие?")) return;
-
     try {
-      await eventService.cancelRegistration(id);
+      const token = authService.getToken();
+      if (!token) return;
+
+      const response = await fetch(`${API_URL}/events/${id}/register`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.message || "Не удалось отменить запись");
+      }
+
       setJoinedEvents((events) => events.filter((event) => event.id !== id));
     } catch (requestError) {
       setError(
@@ -176,7 +188,7 @@ function MyEventsPage() {
           {activeTab === "created" && (
             <button
               className={styles.createBtn}
-              onClick={() => navigate("/events/create")}
+              onClick={() => navigate("/create-event")}
             >
               Создать мероприятие
             </button>

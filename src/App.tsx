@@ -18,6 +18,7 @@ import { SettingsPage } from "./pages/SettingsPage";
 
 import Header from "./components/Header";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import EditEventPage from "./pages/EditEventPage";
 
 const Layout = () => {
   return (
@@ -38,6 +39,15 @@ const router = createBrowserRouter(
 
       <Route path="login" element={<Login />} />
       <Route path="register" element={<RegisterPage />} />
+
+      <Route
+        path="events/:id/edit"
+        element={
+          <ProtectedRoute>
+            <EditEventPage />
+          </ProtectedRoute>
+        }
+      />
 
       <Route
         path="create-event"
