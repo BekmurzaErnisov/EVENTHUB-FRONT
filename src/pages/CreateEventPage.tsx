@@ -4,7 +4,7 @@ import styles from "./CreateEventPage.module.css";
 import { authService } from "../services/auth.service";
 
 interface Category {
-  id: number;
+  id: string;
   name: string;
 }
 
@@ -19,7 +19,10 @@ export const CreateEventPage: React.FC = () => {
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
   const [seats, setSeats] = useState("");
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+
   const [categories, setCategories] = useState<Category[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -27,14 +30,20 @@ export const CreateEventPage: React.FC = () => {
   useEffect(() => {
     fetch("http://localhost:3000/categories")
       .then((response) => response.json())
-      .then(setCategories)
+      .then((data: Category[]) => {
+        setCategories(data);
+        if (data && data.length > 0) {
+          setCategory(data[0].id);
+        }
+      })
       .catch(() => setError("Не удалось загрузить категории"));
   }, []);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      setImageUrl(URL.createObjectURL(file));
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
     }
   };
 
@@ -42,36 +51,65 @@ export const CreateEventPage: React.FC = () => {
     e.preventDefault();
     setError("");
 
-    if (!authService.getToken()) {
+    const token = authService.getToken();
+    if (!token) {
       setError("Чтобы создать мероприятие, войдите в аккаунт");
       return;
     }
 
     if (!title || !description || !date || !time || !location || !category) {
-      setError("Заполните все обязательные поля");
+      setError("Заполните все обязательные поля (включая категорию)");
       return;
     }
 
     try {
       setLoading(true);
+      let uploadedImageUrl = "";
+
+      if (imageFile) {
+        const formData = new FormData();
+        formData.append("file", imageFile);
+
+        const uploadRes = await fetch("http://localhost:3000/events/upload", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        });
+
+        if (!uploadRes.ok) {
+          throw new Error("Не удалось загрузить изображение на сервер");
+        }
+
+        const uploadData = await uploadRes.json();
+        uploadedImageUrl = uploadData.url || uploadData.path || uploadData.imageUrl || uploadData;
+      }
+
       const response = await fetch("http://localhost:3000/events", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...authService.getAuthHeader(),
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           title,
           description,
           date: `${date}T${time}:00`,
           location,
-          categoryId: Number(category),
+          categoryId: category,
           price: Number(price) || 0,
           capacity: Number(seats) || 1,
+          imageUrl: uploadedImageUrl, 
         }),
       });
 
       const data = await response.json();
+
+      if (response.status === 401) {
+        throw new Error("Токен авторизации недействителен или истек. Войдите снова.");
+      }
+
       if (!response.ok) {
         const message = data.message || "Не удалось создать мероприятие";
         throw new Error(Array.isArray(message) ? message.join(", ") : message);
@@ -79,7 +117,11 @@ export const CreateEventPage: React.FC = () => {
 
       navigate(`/events/${data.id}`);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Ошибка создания мероприятия");
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Ошибка создания мероприятия"
+      );
     } finally {
       setLoading(false);
     }
@@ -96,7 +138,6 @@ export const CreateEventPage: React.FC = () => {
 
       <form onSubmit={handleSubmit} className={styles.form}>
         <div className={styles.grid}>
-          {/* Левая колонка */}
           <div className={styles.leftColumn}>
             <div className={styles.field}>
               <label className={styles.label}>
@@ -117,7 +158,7 @@ export const CreateEventPage: React.FC = () => {
               </label>
               <div className={styles.textareaWrapper}>
                 <textarea
-                  placeholder="Расскажите, о чем ваше мероприятие, что ждёт участников..."
+                  placeholder="Расскажите, о чем ваше мероприятие..."
                   maxLength={1000}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -144,9 +185,9 @@ export const CreateEventPage: React.FC = () => {
                   className={styles.fileInput}
                 />
                 <label htmlFor="image-upload" className={styles.dropzoneLabel}>
-                  {imageUrl ? (
+                  {imagePreview ? (
                     <img
-                      src={imageUrl}
+                      src={imagePreview}
                       alt="Превью"
                       className={styles.preview}
                     />
@@ -227,10 +268,11 @@ export const CreateEventPage: React.FC = () => {
               onChange={(e) => setCategory(e.target.value)}
               className={styles.select}
             >
-                <option value="">Выберите категорию</option>
-                {categories.map((item) => (
-                  <option value={item.id} key={item.id}>{item.name}</option>
-                ))}
+              {categories.map((item) => (
+                <option value={item.id} key={item.id}>
+                  {item.name}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -277,7 +319,11 @@ export const CreateEventPage: React.FC = () => {
           >
             ← Отмена
           </button>
-          <button type="submit" className={styles.submitButton} disabled={loading}>
+          <button
+            type="submit"
+            className={styles.submitButton}
+            disabled={loading}
+          >
             {loading ? "Создание..." : "Создать мероприятие"}
           </button>
         </div>

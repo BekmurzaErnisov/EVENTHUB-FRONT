@@ -3,6 +3,8 @@ import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../AuthContext";
 import styles from "./Header.module.css";
 
+const API_URL = "http://localhost:3000";
+
 export const Header: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -50,8 +52,19 @@ export const Header: React.FC = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-  const displayName = user?.name || user?.email || "Профиль"
-  const avatarLetter = displayName.charAt(0).toUpperCase()
+
+  const displayName = user?.name || user?.email || "Профиль";
+  const avatarLetter = displayName.charAt(0).toUpperCase();
+
+  const getAvatarSrc = (url?: string) => {
+    if (!url) return null;
+    if (url.startsWith("http") || url.startsWith("data:")) {
+      return url;
+    }
+    return `${API_URL}${url}`;
+  };
+
+  const avatarSrc = getAvatarSrc(user?.avatarUrl);
 
   return (
     <header className={styles.header}>
@@ -108,6 +121,29 @@ export const Header: React.FC = () => {
             </button>
           </form>
 
+          {isAuthenticated && (
+            <button
+              type="button"
+              onClick={() => navigate("/create-event")}
+              className={styles.createButton}
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              <span>Создать</span>
+            </button>
+          )}
+
           <div className={styles.authLinks}>
             {isAuthenticated ? (
               <div className={styles.profileMenuContainer} ref={menuRef}>
@@ -117,23 +153,19 @@ export const Header: React.FC = () => {
                   onClick={() => setIsMenuOpen((prev) => !prev)}
                 >
                   <div className={styles.avatar}>
-                    {user?.avatarUrl ? (
-                      <img src={user.avatarUrl} alt={displayName} />
+                    {avatarSrc ? (
+                      <img src={avatarSrc} alt={displayName} className={styles.avatarImg} />
                     ) : (
                       <span>{avatarLetter}</span>
                     )}
                   </div>
-                  <span className={styles.userName}>
-                    {displayName}
-                  </span>
+                  <span className={styles.userName}>{displayName}</span>
                 </button>
 
                 {isMenuOpen && (
                   <div className={styles.dropdownMenu}>
                     <div className={styles.menuHeader}>
-                      <p className={styles.menuName}>
-                        {displayName}
-                      </p>
+                      <p className={styles.menuName}>{displayName}</p>
                       {user?.email && (
                         <p className={styles.menuEmail}>{user.email}</p>
                       )}

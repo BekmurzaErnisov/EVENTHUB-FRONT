@@ -6,7 +6,6 @@ import {
   Outlet,
 } from "react-router-dom";
 
-import HomePage from "./pages/HomePage";
 import EventsPage from "./pages/EventsPage";
 import { Login } from "./pages/LoginPage";
 import MyEventsPage from "./pages/MyEventsPage";
@@ -31,12 +30,21 @@ const Layout = () => {
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<Layout />}>
-      <Route index element={<HomePage />} />
+      <Route index element={<EventsPage />} />
       <Route path="events" element={<EventsPage />} />
+      <Route path="events/:id" element={<DetailPage />} />
       <Route path="login" element={<Login />} />
       <Route path="register" element={<RegisterPage />} />
-      <Route path="events/:id" element={<DetailPage />} />
-      
+
+      <Route
+        path="/create-event"
+        element={
+          <ProtectedRoute>
+            <CreateEventPage />
+          </ProtectedRoute>
+        }
+      />
+
       <Route
         path="settings"
         element={
@@ -45,14 +53,7 @@ const router = createBrowserRouter(
           </ProtectedRoute>
         }
       />
-      <Route
-        path="my-events"
-        element={
-          <ProtectedRoute>
-            <MyEventsPage />
-          </ProtectedRoute>
-        }
-      />
+      <Route path="my-events" element={<MyEventsPage />} />
       <Route
         path="events/create"
         element={
