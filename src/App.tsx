@@ -4,6 +4,7 @@ import {
   Route,
   RouterProvider,
   Outlet,
+  Navigate,
 } from "react-router-dom";
 
 import EventsPage from "./pages/EventsPage";
@@ -30,35 +31,35 @@ const Layout = () => {
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<Layout />}>
-      <Route index element={<EventsPage />} />
+      <Route index element={<Navigate to="/events" replace />} />
+
       <Route path="events" element={<EventsPage />} />
       <Route path="events/:id" element={<DetailPage />} />
+
       <Route path="login" element={<Login />} />
       <Route path="register" element={<RegisterPage />} />
 
       <Route
-        path="/create-event"
+        path="create-event"
         element={
           <ProtectedRoute>
             <CreateEventPage />
           </ProtectedRoute>
         }
       />
-
+      <Route
+        path="my-events"
+        element={
+          <ProtectedRoute>
+            <MyEventsPage />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="settings"
         element={
           <ProtectedRoute>
             <SettingsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route path="my-events" element={<MyEventsPage />} />
-      <Route
-        path="events/create"
-        element={
-          <ProtectedRoute>
-            <CreateEventPage />
           </ProtectedRoute>
         }
       />
