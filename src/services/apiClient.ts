@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:3000";
+import { API_URL } from "../config/api";
 
 interface FetchOptions extends RequestInit {
   headers?: Record<string, string>;
@@ -16,7 +16,7 @@ export const fetchWithAuth = async (
     ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
   };
 
-  let response = await fetch(`${BASE_URL}${endpoint}`, {
+  let response = await fetch(`${API_URL}${endpoint}`, {
     ...options,
     headers,
   });
@@ -30,7 +30,7 @@ export const fetchWithAuth = async (
     }
 
     try {
-      const refreshResponse = await fetch(`${BASE_URL}/auth/refresh`, {
+      const refreshResponse = await fetch(`${API_URL}/auth/refresh`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refreshToken }),
@@ -49,7 +49,7 @@ export const fetchWithAuth = async (
           Authorization: `Bearer ${data.access_token}`,
         };
 
-        return await fetch(`${BASE_URL}${endpoint}`, {
+        return await fetch(`${API_URL}${endpoint}`, {
           ...options,
           headers: retryHeaders,
         });

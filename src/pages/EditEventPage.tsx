@@ -2,6 +2,12 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { eventService } from "../services/event.service";
 import styles from "./CreateEventPage.module.css";
+import { API_URL } from "../config/api";
+
+interface Category {
+  id: number;
+  name: string;
+}
 
 function EditEventPage() {
   const { id } = useParams<{ id: string }>();
@@ -13,6 +19,8 @@ function EditEventPage() {
   const [location, setLocation] = useState("");
   const [price, setPrice] = useState("");
   const [capacity, setCapacity] = useState("");
+  const [category, setCategory] = useState<number | "">("");
+  const [categories, setCategories] = useState<Category[]>([]);
   
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
@@ -34,11 +42,12 @@ function EditEventPage() {
         setLocation(event.location || "");
         setPrice(event.price !== undefined && event.price !== null ? event.price.toString() : "");
         setCapacity(event.capacity !== undefined && event.capacity !== null ? event.capacity.toString() : "");
+        setCategory(event.category?.id ?? "");
         
         if (event.imageUrl || event.image) {
           const imgUrl = event.imageUrl || event.image;
           // Корректно формируем путь, если картинка относительная
-          const fullImgUrl = imgUrl.startsWith("http") ? imgUrl : `http://localhost:3000${imgUrl}`;
+          const fullImgUrl = imgUrl.startsWith("http") ? imgUrl : `${API_URL}${imgUrl}`;
           setImagePreview(fullImgUrl);
         }
       } catch (err) {
@@ -50,6 +59,13 @@ function EditEventPage() {
 
     fetchEvent();
   }, [id]);
+
+  useEffect(() => {
+    fetch(`${API_URL}/categories`)
+      .then((response) => response.json())
+      .then((data: Category[]) => setCategories(data))
+      .catch(() => setError("Не удалось загрузить категории"));
+  }, []);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -67,6 +83,22 @@ function EditEventPage() {
     try {
       if (!id) return;
 
+      const eventDate = new Date(date);
+      const numericPrice = Number(price) || 0;
+      const numericCapacity = Number(capacity);
+
+      if (!date || eventDate <= new Date()) {
+        throw new Error("Дата мероприятия должна быть в будущем");
+      }
+
+      if (numericPrice < 0) {
+        throw new Error("Цена не может быть отрицательной");
+      }
+
+      if (!Number.isInteger(numericCapacity) || numericCapacity < 1) {
+        throw new Error("Вместимость должна быть целым числом больше нуля");
+      }
+
       let uploadedImageUrl = imagePreview;
 
       if (imageFile) {
@@ -76,10 +108,11 @@ function EditEventPage() {
       await eventService.updateEvent(id, {
         title,
         description,
-        date: new Date(date).toISOString(),
+        date: eventDate.toISOString(),
         location,
-        price: price ? Number(price) : 0,
-        capacity: Number(capacity),
+        price: numericPrice,
+        capacity: numericCapacity,
+        ...(category !== "" ? { categoryId: category } : {}),
         imageUrl: uploadedImageUrl,
       });
 
@@ -165,9 +198,9 @@ function EditEventPage() {
               />
             </div>
 
-            <div className={styles.rowTwo}>
+            <div className={styles.rowThree}>
               <div className={styles.field}>
-                <label className={styles.label}>Цена (₽)</label>
+                <label className={styles.label}>Цена (сом)</label>
                 <input
                   type="number"
                   className={styles.input}
@@ -175,6 +208,20 @@ function EditEventPage() {
                   onChange={(e) => setPrice(e.target.value)}
                   min="0"
                 />
+              </div>
+
+              <div className={styles.field}>
+                <label className={styles.label}>Категория</label>
+                <select
+                  className={styles.select}
+                  value={category === "" ? "" : String(category)}
+                  onChange={(e) => setCategory(Number(e.target.value))}
+                >
+                  <option value="">Без категории</option>
+                  {categories.map((item) => (
+                    <option value={item.id} key={item.id}>{item.name}</option>
+                  ))}
+                </select>
               </div>
 
               <div className={styles.field}>

@@ -4,6 +4,7 @@ import { CalendarDays, MapPin, Edit2, Trash2, LogOut } from "lucide-react";
 import { eventService } from "../services/event.service";
 import { authService } from "../services/auth.service";
 import styles from "./MyEventsPage.module.css";
+import { API_URL } from "../config/api";
 
 interface EventItem {
   id: string;
@@ -16,7 +17,6 @@ interface EventItem {
 }
 
 function MyEventsPage() {
-  const API_URL = "http://localhost:3000";
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"created" | "joined">("created");
   const [createdEvents, setCreatedEvents] = useState<EventItem[]>([]);
