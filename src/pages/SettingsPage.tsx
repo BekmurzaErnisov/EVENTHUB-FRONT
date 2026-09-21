@@ -3,8 +3,7 @@ import { useAuth } from '../AuthContext';
 import styles from './LoginPage.module.css';
 import { authService } from '../services/auth.service';
 import { useNavigate } from 'react-router-dom';
-
-const API_URL = 'http://localhost:3000';
+import { API_URL } from '../config/api';
 
 export const SettingsPage: React.FC = () => {
   const { user, login, deleteAccount } = useAuth();

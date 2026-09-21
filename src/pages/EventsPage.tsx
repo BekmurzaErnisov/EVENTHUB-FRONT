@@ -2,6 +2,7 @@ import styles from './EventsPage.module.css';
 import { CalendarDays, MapPin, Search, CircleDollarSign, UserCheck } from 'lucide-react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { API_URL } from '../config/api';
 
 interface EventItem {
   id: string;
@@ -24,8 +25,6 @@ interface Category {
   name: string;
 }
 
-const API_URL = 'http://localhost:3000';
-
 function EventsPage() {
   const [events, setEvents] = useState<EventItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -33,6 +32,9 @@ function EventsPage() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sort, setSort] = useState('nearest');
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
   const [error, setError] = useState('');
   
   const locationHook = useLocation();
@@ -47,10 +49,16 @@ function EventsPage() {
       try {
         setLoading(true);
         setError('');
-        const query = search.trim() ? `?search=${encodeURIComponent(search.trim())}` : '';
+        const params = new URLSearchParams({ page: '1', limit: '12' });
+        if (search.trim()) params.set('search', search.trim());
+        if (selectedCategory !== 'all') params.set('categoryId', selectedCategory);
+        const query = params.toString() ? `?${params.toString()}` : '';
         const response = await fetch(`${API_URL}/events${query}`);
         if (!response.ok) throw new Error('Не удалось загрузить мероприятия');
-        setEvents(await response.json());
+        const nextEvents = await response.json();
+        setEvents(Array.isArray(nextEvents) ? nextEvents : []);
+        setPage(1);
+        setHasMore(response.headers.get('X-Has-More') === 'true');
       } catch (requestError) {
         setError(requestError instanceof Error ? requestError.message : 'Ошибка загрузки');
       } finally {
@@ -60,7 +68,33 @@ function EventsPage() {
 
     const timer = window.setTimeout(loadEvents, search ? 300 : 0);
     return () => window.clearTimeout(timer);
-  }, [search, locationHook]);
+  }, [search, selectedCategory, locationHook]);
+
+  const loadMore = async () => {
+    if (loadingMore || !hasMore) return;
+
+    try {
+      setLoadingMore(true);
+      const params = new URLSearchParams({
+        page: String(page + 1),
+        limit: '12',
+      });
+      if (search.trim()) params.set('search', search.trim());
+      if (selectedCategory !== 'all') params.set('categoryId', selectedCategory);
+
+      const response = await fetch(`${API_URL}/events?${params.toString()}`);
+      if (!response.ok) throw new Error('Не удалось загрузить мероприятия');
+
+      const nextEvents = await response.json();
+      setEvents((currentEvents) => [...currentEvents, ...(Array.isArray(nextEvents) ? nextEvents : [])]);
+      setPage((currentPage) => currentPage + 1);
+      setHasMore(response.headers.get('X-Has-More') === 'true');
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : 'Ошибка загрузки');
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   useEffect(() => {
     fetch(`${API_URL}/categories`)
@@ -69,17 +103,17 @@ function EventsPage() {
       .catch(() => setCategories([]));
   }, []);
 
-  const filteredEvents = selectedCategory === 'all'
-    ? events
-    : events.filter((event) => event.category?.name === selectedCategory);
-
-  const visibleEvents = [...filteredEvents].sort((first, second) => {
+  const visibleEvents = [...events].sort((first, second) => {
     if (sort === 'title') return first.title.localeCompare(second.title);
     if (sort === 'oldest') return new Date(first.date).getTime() - new Date(second.date).getTime();
     if (sort === 'added') return new Date(second.createdAt).getTime() - new Date(first.createdAt).getTime();
     if (sort === 'newest') return new Date(second.date).getTime() - new Date(first.date).getTime();
     return new Date(first.date).getTime() - new Date(second.date).getTime();
   });
+
+  const emptyMessage = search.trim() || selectedCategory !== 'all'
+    ? 'По вашему запросу ничего не найдено.'
+    : 'Мероприятий пока нет.';
 
   const getImageUrl = (url?: string | null) => {
     if (!url) return null;
@@ -101,11 +135,13 @@ function EventsPage() {
 
   const getSeatsText = (event: EventItem) => {
     if (event.availableSeats !== undefined && event.availableSeats !== null) {
+      if (event.availableSeats <= 0) return 'Мест нет';
       return `Осталось ${event.availableSeats} мест`;
     }
     if (event.capacity !== undefined && event.capacity !== null) {
       const registered = event.registeredCount || 0;
       const left = Math.max(0, event.capacity - registered);
+      if (left <= 0) return 'Мест нет';
       return `Осталось ${left} мест`;
     }
     return 'Места есть';
@@ -134,7 +170,7 @@ function EventsPage() {
           >
             <option value="all">Все категории</option>
             {categories.map((category) => (
-              <option value={category.name} key={category.id}>{category.name}</option>
+              <option value={String(category.id)} key={category.id}>{category.name}</option>
             ))}
           </select>
           <select value={sort} onChange={(event) => setSort(event.target.value)} aria-label="Сортировка мероприятий">
@@ -155,7 +191,7 @@ function EventsPage() {
       {loading && <p className={styles.status}>Загрузка мероприятий...</p>}
       {!loading && error && <p className={styles.status}>{error}</p>}
       {!loading && !error && visibleEvents.length === 0 && (
-        <p className={styles.status}>Мероприятий пока нет.</p>
+        <p className={styles.status}>{emptyMessage}</p>
       )}
       {!loading && !error && visibleEvents.length > 0 && (
         <section className={styles.eventsGrid} aria-label="Список мероприятий">
@@ -207,6 +243,12 @@ function EventsPage() {
             );
           })}
         </section>
+      )}
+
+      {!loading && !error && visibleEvents.length > 0 && hasMore && (
+        <button type="button" className={styles.loadMoreButton} onClick={loadMore} disabled={loadingMore}>
+          {loadingMore ? 'Загрузка...' : 'Загрузить ещё'}
+        </button>
       )}
     </main>
   );

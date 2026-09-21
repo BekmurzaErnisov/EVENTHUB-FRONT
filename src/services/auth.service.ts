@@ -1,4 +1,5 @@
 import { fetchWithAuth } from "./apiClient";
+import { API_URL } from "../config/api";
 
 export interface LoginDto {
   email: string;
@@ -25,8 +26,6 @@ export interface AuthResponse {
 }
 
 const TOKEN_KEY = "userToken";
-const API_URL = "http://localhost:3000";
-
 export const authService = {
   async updateProfile(data: {
     name: string;

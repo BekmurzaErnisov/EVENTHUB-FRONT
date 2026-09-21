@@ -1,7 +1,6 @@
 import { authService } from "./auth.service";
 import { fetchWithAuth } from "./apiClient";
-
-const API_URL = "http://localhost:3000";
+import { API_URL } from "../config/api";
 
 export const eventService = {
   async createEvent(data: FormData | Record<string, any>) {

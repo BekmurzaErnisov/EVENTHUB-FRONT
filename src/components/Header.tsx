@@ -2,8 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../AuthContext";
 import styles from "./Header.module.css";
-
-const API_URL = "http://localhost:3000";
+import { API_URL } from "../config/api";
 
 export const Header: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
