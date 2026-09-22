@@ -1,10 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useAuth } from '../AuthContext';
+import { useAuth, type User } from '../AuthContext';
 import styles from './LoginPage.module.css';
 import { authService } from '../services/auth.service';
 import { useNavigate } from 'react-router-dom';
-
-const API_URL = 'http://localhost:3000';
+import { API_URL } from '../config/api';
 
 export const SettingsPage: React.FC = () => {
   const { user, login, deleteAccount } = useAuth();
@@ -68,8 +67,6 @@ export const SettingsPage: React.FC = () => {
     try {
       setLoadingProfile(true);
 
-      let finalAvatarUrl: string | null = avatarUrl;
-
       if (selectedFile) {
         const formData = new FormData();
         formData.append('file', selectedFile);
@@ -84,30 +81,28 @@ export const SettingsPage: React.FC = () => {
 
         const data = await response.json();
         if (!response.ok) {
-          throw new Error(data.message || 'Ошибка загрузки аватара');
+          const message = Array.isArray(data.message) ? data.message.join(', ') : data.message;
+          throw new Error(message || 'Ошибка загрузки аватара');
         }
-
-        finalAvatarUrl = data.avatarUrl;
       } else if (isAvatarRemoved) {
         await authService.deleteAvatar();
-        finalAvatarUrl = null;
       }
 
       const updateData = await authService.updateProfile({
         name,
         email,
-        avatarUrl: finalAvatarUrl,
       });
 
       const token = localStorage.getItem('userToken') || '';
-      const updatedUser = updateData || {
-        ...user,
-        name,
-        email,
-        avatarUrl: finalAvatarUrl,
+      const updatedUser: User = {
+        id: updateData.id,
+        name: updateData.name,
+        email: updateData.email,
+        avatarUrl: updateData.avatarUrl,
       };
 
-      login(token, updatedUser as any);
+      login(token, localStorage.getItem('refreshToken') || undefined, updatedUser);
+      setAvatarUrl(updatedUser.avatarUrl || '');
 
       setSelectedFile(null);
       setIsAvatarRemoved(false);

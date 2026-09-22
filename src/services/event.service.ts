@@ -1,7 +1,6 @@
 import { authService } from "./auth.service";
 import { fetchWithAuth } from "./apiClient";
-
-const API_URL = "http://localhost:3000";
+import { API_URL } from "../config/api";
 
 export const eventService = {
   async createEvent(data: FormData | Record<string, any>) {
@@ -165,33 +164,6 @@ export const eventService = {
 
     const text = await response.text();
     return text ? JSON.parse(text) : true;
-  },
-
-  async cancelRegistration(id: string) {
-    const token = authService.getToken();
-
-    if (!token) {
-      throw new Error("Пожалуйста, войдите в аккаунт");
-    }
-
-    const response = await fetch(`${API_URL}/events/${id}/leave`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (response.status === 401) {
-      authService.removeToken();
-      throw new Error("Пожалуйста, войдите в аккаунт");
-    }
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.message || "Ошибка при отмене записи");
-    }
-
-    return response.json();
   },
 
   async getMyRegistrations() {

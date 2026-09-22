@@ -1,24 +1,30 @@
+import { lazy, Suspense } from "react";
 import {
   createBrowserRouter,
   createRoutesFromElements,
   Route,
   RouterProvider,
   Outlet,
-  Navigate,
 } from "react-router-dom";
-
-import EventsPage from "./pages/EventsPage";
-import { Login } from "./pages/LoginPage";
-import MyEventsPage from "./pages/MyEventsPage";
-import CreateEventPage from "./pages/CreateEventPage";
-import DetailPage from "./pages/DetailPage";
-import NotFoundPage from "./pages/NotFoundPage";
-import { RegisterPage } from "./pages/RegisterPage";
-import { SettingsPage } from "./pages/SettingsPage";
 
 import Header from "./components/Header";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-import EditEventPage from "./pages/EditEventPage";
+
+const EventsPage = lazy(() => import("./pages/EventsPage"));
+const MyEventsPage = lazy(() => import("./pages/MyEventsPage"));
+const CreateEventPage = lazy(() => import("./pages/CreateEventPage"));
+const DetailPage = lazy(() => import("./pages/DetailPage"));
+const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
+const EditEventPage = lazy(() => import("./pages/EditEventPage"));
+const Login = lazy(() =>
+  import("./pages/LoginPage").then(({ Login }) => ({ default: Login })),
+);
+const RegisterPage = lazy(() =>
+  import("./pages/RegisterPage").then(({ RegisterPage }) => ({ default: RegisterPage })),
+);
+const SettingsPage = lazy(() =>
+  import("./pages/SettingsPage").then(({ SettingsPage }) => ({ default: SettingsPage })),
+);
 
 const Layout = () => {
   return (
@@ -32,7 +38,7 @@ const Layout = () => {
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<Layout />}>
-      <Route index element={<Navigate to="/events" replace />} />
+      <Route index element={<EventsPage />} />
 
       <Route path="events" element={<EventsPage />} />
       <Route path="events/:id" element={<DetailPage />} />
@@ -80,5 +86,9 @@ const router = createBrowserRouter(
 );
 
 export default function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <Suspense fallback={<div style={{ padding: "24px" }}>Загрузка страницы...</div>}>
+      <RouterProvider router={router} />
+    </Suspense>
+  );
 }

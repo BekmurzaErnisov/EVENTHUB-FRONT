@@ -219,6 +219,24 @@
   background: #1d4ed8;
 }
 
+.loadMoreButton {
+  display: block;
+  margin: 0 auto 48px;
+  padding: 11px 20px;
+  border: 1px solid #2563eb;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #2563eb;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.loadMoreButton:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
 @media (max-width: 1500px) {
   .hero,
   .eventsSection,

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./CreateEventPage.module.css";
 import { authService } from "../services/auth.service";
+import { API_URL } from "../config/api";
 
 interface Category {
   id: number;
@@ -28,7 +29,7 @@ export const CreateEventPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:3000/categories")
+    fetch(`${API_URL}/categories`)
       .then((response) => response.json())
       .then((data: Category[]) => {
         setCategories(data);
@@ -62,31 +63,54 @@ export const CreateEventPage: React.FC = () => {
       return;
     }
 
+    if (!imageFile) {
+      setError("Загрузите изображение мероприятия");
+      return;
+    }
+
+    const eventDate = new Date(`${date}T${time}`);
+    const numericPrice = Number(price) || 0;
+    const numericSeats = Number(seats);
+
+    if (eventDate <= new Date()) {
+      setError("Дата мероприятия должна быть в будущем");
+      return;
+    }
+
+    if (numericPrice < 0) {
+      setError("Цена не может быть отрицательной");
+      return;
+    }
+
+    if (!Number.isInteger(numericSeats) || numericSeats < 1) {
+      setError("Количество мест должно быть целым числом больше нуля");
+      return;
+    }
+
     try {
       setLoading(true);
-      let uploadedImageUrl = "";
+      const formData = new FormData();
+      formData.append("file", imageFile);
 
-      if (imageFile) {
-        const formData = new FormData();
-        formData.append("file", imageFile);
+      const uploadRes = await fetch(`${API_URL}/events/upload`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
 
-        const uploadRes = await fetch("http://localhost:3000/events/upload", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: formData,
-        });
-
-        if (!uploadRes.ok) {
-          throw new Error("Не удалось загрузить изображение на сервер");
-        }
-
-        const uploadData = await uploadRes.json();
-        uploadedImageUrl = uploadData.url || uploadData.path || uploadData.imageUrl || uploadData;
+      if (!uploadRes.ok) {
+        throw new Error("Не удалось загрузить изображение на сервер");
       }
 
-      const response = await fetch("http://localhost:3000/events", {
+      const uploadData = await uploadRes.json();
+      const uploadedImageUrl = uploadData.imageUrl || uploadData.url || uploadData.path;
+      if (!uploadedImageUrl || typeof uploadedImageUrl !== "string") {
+        throw new Error("Сервер не вернул адрес изображения");
+      }
+
+      const response = await fetch(`${API_URL}/events`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -95,11 +119,11 @@ export const CreateEventPage: React.FC = () => {
         body: JSON.stringify({
           title,
           description,
-          date: `${date}T${time}:00`,
+          date: eventDate.toISOString(),
           location,
           categoryId: Number(category),
-          price: Number(price) || 0,
-          capacity: Number(seats) || 1,
+          price: numericPrice,
+          capacity: numericSeats,
           imageUrl: uploadedImageUrl,
         }),
       });

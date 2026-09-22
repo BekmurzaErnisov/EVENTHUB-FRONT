@@ -12,6 +12,7 @@ import {
 import styles from "./DetailPage.module.css";
 import { authService } from "../services/auth.service";
 import { formatDate } from "../utils/formatDate";
+import { API_URL } from "../config/api";
 
 interface EventDetails {
   id: string;
@@ -28,8 +29,6 @@ interface EventDetails {
   organizer?: { name: string } | null;
   isJoined?: boolean;
 }
-
-const API_URL = "http://localhost:3000";
 
 function DetailPage() {
   const { id } = useParams();
@@ -160,10 +159,12 @@ function DetailPage() {
   // Вычисление оставшихся мест
   const getSeatsDisplay = () => {
     if (event.availableSeats !== undefined && event.availableSeats !== null) {
+      if (event.availableSeats <= 0) return "Мест нет";
       return `Осталось мест: ${event.availableSeats}`;
     }
     if (event.capacity && event.registeredCount !== undefined) {
-      return `Осталось мест: ${Math.max(0, event.capacity - event.registeredCount)}`;
+      const remainingSeats = Math.max(0, event.capacity - event.registeredCount);
+      return remainingSeats > 0 ? `Осталось мест: ${remainingSeats}` : "Мест нет";
     }
     return `Мест всего: ${event.capacity}`;
   };
@@ -218,8 +219,8 @@ function DetailPage() {
         <div>
           <CircleDollarSign className={styles.detailIcon} size={20} />
           <span>
-            {event.price
-              ? <>{`от ${new Intl.NumberFormat('ru-RU').format(event.price)} `}<span className={styles.currencyBadge}>сом</span></>
+            {Number(event.price) > 0
+              ? <>{`от ${new Intl.NumberFormat('ru-RU').format(Number(event.price))} `}<span className={styles.currencyBadge}>сом</span></>
               : 'Бесплатно'}
           </span>
         </div>
@@ -243,10 +244,10 @@ function DetailPage() {
         ) : (
           <button
             onClick={handleRegister}
-            disabled={actionLoading}
+            disabled={actionLoading || getSeatsDisplay() === "Мест нет"}
             className={styles.joinButton}
           >
-            {actionLoading ? "Запись..." : "Записаться"}
+            {actionLoading ? "Запись..." : getSeatsDisplay() === "Мест нет" ? "Мест нет" : "Записаться"}
           </button>
         )}
 
