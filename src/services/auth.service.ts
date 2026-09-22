@@ -27,11 +27,7 @@ export interface AuthResponse {
 
 const TOKEN_KEY = "userToken";
 export const authService = {
-  async updateProfile(data: {
-    name: string;
-    email: string;
-    avatarUrl?: string | null;
-  }) {
+  async updateProfile(data: { name: string; email: string }) {
     const response = await fetchWithAuth(`/users/me`, {
       method: "PATCH",
       headers: {

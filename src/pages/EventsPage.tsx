@@ -1,6 +1,6 @@
 import styles from './EventsPage.module.css';
 import { CalendarDays, MapPin, Search, CircleDollarSign, UserCheck } from 'lucide-react';
-import { Link, useLocation, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { API_URL } from '../config/api';
 
@@ -38,6 +38,7 @@ function EventsPage() {
   const [error, setError] = useState('');
   
   const locationHook = useLocation();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
@@ -49,7 +50,7 @@ function EventsPage() {
       try {
         setLoading(true);
         setError('');
-        const params = new URLSearchParams({ page: '1', limit: '12' });
+        const params = new URLSearchParams({ page: '1', limit: '12', sort });
         if (search.trim()) params.set('search', search.trim());
         if (selectedCategory !== 'all') params.set('categoryId', selectedCategory);
         const query = params.toString() ? `?${params.toString()}` : '';
@@ -68,7 +69,7 @@ function EventsPage() {
 
     const timer = window.setTimeout(loadEvents, search ? 300 : 0);
     return () => window.clearTimeout(timer);
-  }, [search, selectedCategory, locationHook]);
+  }, [search, selectedCategory, sort, locationHook]);
 
   const loadMore = async () => {
     if (loadingMore || !hasMore) return;
@@ -78,6 +79,7 @@ function EventsPage() {
       const params = new URLSearchParams({
         page: String(page + 1),
         limit: '12',
+        sort,
       });
       if (search.trim()) params.set('search', search.trim());
       if (selectedCategory !== 'all') params.set('categoryId', selectedCategory);
@@ -103,13 +105,14 @@ function EventsPage() {
       .catch(() => setCategories([]));
   }, []);
 
-  const visibleEvents = [...events].sort((first, second) => {
-    if (sort === 'title') return first.title.localeCompare(second.title);
-    if (sort === 'oldest') return new Date(first.date).getTime() - new Date(second.date).getTime();
-    if (sort === 'added') return new Date(second.createdAt).getTime() - new Date(first.createdAt).getTime();
-    if (sort === 'newest') return new Date(second.date).getTime() - new Date(first.date).getTime();
-    return new Date(first.date).getTime() - new Date(second.date).getTime();
-  });
+  const visibleEvents = events;
+
+  const showAll = () => {
+    setSearch('');
+    setSelectedCategory('all');
+    setSort('nearest');
+    navigate('/events');
+  };
 
   const emptyMessage = search.trim() || selectedCategory !== 'all'
     ? 'По вашему запросу ничего не найдено.'
@@ -123,11 +126,12 @@ function EventsPage() {
     return `${API_URL}${url.startsWith('/') ? '' : '/'}${url}`;
   };
 
-  const formatPrice = (price?: number | null) => {
-    if (price === undefined || price === null || price === 0) return 'Бесплатно';
+  const formatPrice = (price?: number | string | null) => {
+    const numericPrice = Number(price);
+    if (!Number.isFinite(numericPrice) || numericPrice <= 0) return 'Бесплатно';
     return (
       <>
-        от {new Intl.NumberFormat('ru-RU').format(price)}{' '}
+        от {new Intl.NumberFormat('ru-RU').format(numericPrice)}{' '}
         <span className={styles.currencyBadge}>сом</span>
       </>
     );
@@ -185,7 +189,7 @@ function EventsPage() {
 
       <section className={styles.eventsSection}>
         <h2>Ближайшие мероприятия</h2>
-        <button type="button" className={styles.showAll}>Показать все</button>
+        <button type="button" className={styles.showAll} onClick={showAll}>Показать все</button>
       </section>
 
       {loading && <p className={styles.status}>Загрузка мероприятий...</p>}
