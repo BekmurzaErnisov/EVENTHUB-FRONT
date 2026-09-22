@@ -4,6 +4,19 @@ import { eventService } from "../services/event.service";
 import styles from "./CreateEventPage.module.css";
 import { API_URL } from "../config/api";
 
+function toDatetimeLocalValue(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const pad = (part: number) => String(part).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function toStoredImageUrl(url: string) {
+  if (!url || url.startsWith("blob:")) return undefined;
+  if (url.startsWith(API_URL)) return url.slice(API_URL.length) || undefined;
+  return url;
+}
+
 interface Category {
   id: number;
   name: string;
@@ -37,7 +50,7 @@ function EditEventPage() {
         setTitle(event.title || "");
         setDescription(event.description || "");
         if (event.date) {
-          setDate(new Date(event.date).toISOString().slice(0, 16));
+          setDate(toDatetimeLocalValue(event.date));
         }
         setLocation(event.location || "");
         setPrice(event.price !== undefined && event.price !== null ? event.price.toString() : "");
@@ -99,11 +112,9 @@ function EditEventPage() {
         throw new Error("Вместимость должна быть целым числом больше нуля");
       }
 
-      let uploadedImageUrl = imagePreview;
-
-      if (imageFile) {
-        uploadedImageUrl = await eventService.uploadImage(imageFile);
-      }
+      const imageUrl = imageFile
+        ? await eventService.uploadImage(imageFile)
+        : toStoredImageUrl(imagePreview);
 
       await eventService.updateEvent(id, {
         title,
@@ -113,7 +124,7 @@ function EditEventPage() {
         price: numericPrice,
         capacity: numericCapacity,
         ...(category !== "" ? { categoryId: category } : {}),
-        imageUrl: uploadedImageUrl,
+        ...(imageUrl ? { imageUrl } : {}),
       });
 
       navigate(`/events/${id}`);

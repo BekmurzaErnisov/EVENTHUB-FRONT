@@ -7,11 +7,14 @@ interface FetchOptions extends RequestInit {
 export const fetchWithAuth = async (
   endpoint: string,
   options: FetchOptions = {},
+  redirectOnFail = true,
 ): Promise<Response> => {
-  let accessToken = localStorage.getItem("userToken");
+  const accessToken = localStorage.getItem("userToken");
 
-  const headers = {
-    "Content-Type": "application/json",
+  const headers: Record<string, string> = {
+    ...(options.body instanceof FormData
+      ? {}
+      : { "Content-Type": "application/json" }),
     ...(options.headers || {}),
     ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
   };
@@ -25,7 +28,7 @@ export const fetchWithAuth = async (
     const refreshToken = localStorage.getItem("refreshToken");
 
     if (!refreshToken) {
-      handleLogout();
+      handleLogout(redirectOnFail);
       return response;
     }
 
@@ -54,20 +57,22 @@ export const fetchWithAuth = async (
           headers: retryHeaders,
         });
       } else {
-        handleLogout();
+        handleLogout(redirectOnFail);
       }
-    } catch (error) {
-      handleLogout();
+    } catch {
+      handleLogout(redirectOnFail);
     }
   }
 
   return response;
 };
 
-const handleLogout = () => {
+const handleLogout = (redirect = true) => {
   localStorage.removeItem("userToken");
   localStorage.removeItem("refreshToken");
   localStorage.removeItem("userData");
-  window.dispatchEvent(new Event("auth:logout"))
-  window.location.href = "/login";
+  window.dispatchEvent(new Event("auth:logout"));
+  if (redirect) {
+    window.location.href = "/login";
+  }
 };

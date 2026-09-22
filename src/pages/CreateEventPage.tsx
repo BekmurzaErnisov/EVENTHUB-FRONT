@@ -63,6 +63,11 @@ export const CreateEventPage: React.FC = () => {
       return;
     }
 
+    if (!imageFile) {
+      setError("Загрузите изображение мероприятия");
+      return;
+    }
+
     const eventDate = new Date(`${date}T${time}`);
     const numericPrice = Number(price) || 0;
     const numericSeats = Number(seats);
@@ -84,26 +89,25 @@ export const CreateEventPage: React.FC = () => {
 
     try {
       setLoading(true);
-      let uploadedImageUrl = "";
+      const formData = new FormData();
+      formData.append("file", imageFile);
 
-      if (imageFile) {
-        const formData = new FormData();
-        formData.append("file", imageFile);
+      const uploadRes = await fetch(`${API_URL}/events/upload`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
 
-        const uploadRes = await fetch(`${API_URL}/events/upload`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: formData,
-        });
+      if (!uploadRes.ok) {
+        throw new Error("Не удалось загрузить изображение на сервер");
+      }
 
-        if (!uploadRes.ok) {
-          throw new Error("Не удалось загрузить изображение на сервер");
-        }
-
-        const uploadData = await uploadRes.json();
-        uploadedImageUrl = uploadData.url || uploadData.path || uploadData.imageUrl || uploadData;
+      const uploadData = await uploadRes.json();
+      const uploadedImageUrl = uploadData.imageUrl || uploadData.url || uploadData.path;
+      if (!uploadedImageUrl || typeof uploadedImageUrl !== "string") {
+        throw new Error("Сервер не вернул адрес изображения");
       }
 
       const response = await fetch(`${API_URL}/events`, {
